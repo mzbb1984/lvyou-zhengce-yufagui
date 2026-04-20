@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>课程01：导游人员及执业许可</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;overflow-x:hidden}
+.pb{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,#3b82f6,#8b5cf6);z-index:100;transition:width .4s}
+.nav{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:90;flex-wrap:wrap;justify-content:center;max-width:92vw}
+.dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .3s;flex-shrink:0}
+.dot.active{background:#60a5fa;transform:scale(1.4)}
+.dot.done{background:rgba(34,197,94,.5)}
+.dot:hover{background:rgba(255,255,255,.5)}
+.scene{display:none;min-height:100vh;padding:20px;padding-top:60px;padding-bottom:90px}
+.scene.active{display:flex;flex-direction:column;align-items:center}
+iframe{border:none;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.4);width:100%;background:#fff}
+.frame-wrap{width:100%;max-width:960px;position:relative}
+.frame-wrap.aspect{aspect-ratio:16/9}
+.frame-wrap.manual{height:clamp(400px,60vh,700px)}
+.badge{position:absolute;top:12px;right:12px;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:600;z-index:2;pointer-events:none}
+.badge-slide{background:rgba(96,165,250,.2);color:#93c5fd}
+.badge-interactive{background:rgba(168,85,247,.2);color:#c4b5fd}
+.badge-quiz{background:rgba(245,158,11,.2);color:#fcd34d}
+.ctrl{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:90}
+.btn{padding:11px 28px;border:none;border-radius:30px;font-size:15px;font-weight:600;cursor:pointer;transition:all .3s;font-family:inherit}
+.btn-prev{background:rgba(255,255,255,.1);color:#e2e8f0;border:1px solid rgba(255,255,255,.15)}
+.btn-prev:hover{background:rgba(255,255,255,.2)}
+.btn-prev:disabled{opacity:.3;cursor:not-allowed}
+.btn-next{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff}
+.btn-next:hover{transform:scale(1.05);box-shadow:0 4px 20px rgba(59,130,246,.4)}
+.btn-next:disabled{opacity:.3;cursor:not-allowed}
+.cover{flex-direction:column;justify-content:center;text-align:center;min-height:100vh}
+.cover h1{font-size:clamp(28px,6vw,52px);font-weight:700;background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px;line-height:1.3}
+.cover p{font-size:clamp(15px,2.5vw,18px);color:#94a3b8;max-width:500px;line-height:1.8;margin-bottom:40px}
+.complete{flex-direction:column;justify-content:center;text-align:center}
+.complete h2{font-size:clamp(26px,5vw,40px);color:#22c55e;margin-bottom:16px}
+.complete p{color:#94a3b8;font-size:18px;line-height:1.8}
+.scene-hdr{text-align:center;margin-bottom:16px}
+.scene-hdr .type-tag{display:inline-block;padding:4px 14px;border-radius:10px;font-size:12px;font-weight:600;margin-bottom:8px}
+.tt-slide{background:rgba(96,165,250,.15);color:#93c5fd}
+.tt-interactive{background:rgba(168,85,247,.15);color:#c4b5fd}
+.tt-quiz{background:rgba(245,158,11,.15);color:#fcd34d}
+.scene-hdr h2{font-size:clamp(16px,3vw,22px);color:#f1f5f9}
+@media(max-width:600px){.frame-wrap.manual{height:350px}}
+</style>
+</head>
+<body>
+<div class="pb" id="pb"></div>
+<div class="nav" id="nav"></div>
+<div class="scene active" id="s-cover">
+<div class="cover">
+<h1>课程01<br>导游人员及执业许可</h1>
+<p>认识导游行业、了解导游分类与执业许可制度<br>共10个学习环节</p>
+<button class="btn btn-next" onclick="go(1)">开始学习 →</button>
+</div>
+</div>
+<div class="scene" id="s-1"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>开场：导游行业的“暴富”与“凉凉”</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">1/10</span><iframe src="slide_1.html"></iframe></div></div>
+<div class="scene" id="s-2"><div class="scene-hdr"><span class="type-tag tt-interactive">互动体验</span><h2>模拟体验：无证带团的后果</h2></div><div class="frame-wrap manual"><span class="badge badge-interactive">2/10</span><iframe src="interactive_1.html"></iframe></div></div>
+<div class="scene" id="s-3"><div class="scene-hdr"><span class="type-tag tt-quiz">课堂测验</span><h2>基础测试：谁才是真正的导游？</h2></div><div class="frame-wrap manual"><span class="badge badge-quiz">3/10</span><iframe src="quiz_1.html"></iframe></div></div>
+<div class="scene" id="s-4"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>职业分身：地陪、全陪与领队</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">4/10</span><iframe src="slide_2.html"></iframe></div></div>
+<div class="scene" id="s-5"><div class="scene-hdr"><span class="type-tag tt-interactive">互动体验</span><h2>职场选择题：我是哪种导游？</h2></div><div class="frame-wrap manual"><span class="badge badge-interactive">5/10</span><iframe src="interactive_2.html"></iframe></div></div>
+<div class="scene" id="s-6"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>等级制度：从“青铜”到“王者”</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">6/10</span><iframe src="slide_3.html"></iframe></div></div>
+<div class="scene" id="s-7"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>升级攻略：考试与经验的双重考验</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">7/10</span><iframe src="slide_4.html"></iframe></div></div>
+<div class="scene" id="s-8"><div class="scene-hdr"><span class="type-tag tt-quiz">课堂测验</span><h2>晋升挑战赛：你能升到哪一级？</h2></div><div class="frame-wrap manual"><span class="badge badge-quiz">8/10</span><iframe src="quiz_2.html"></iframe></div></div>
+<div class="scene" id="s-9"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>职业雷区：什么情况会直接“Game Over”？</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">9/10</span><iframe src="slide_5.html"></iframe></div></div>
+<div class="scene" id="s-10"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>通关结算：我的导游职业手册</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">10/10</span><iframe src="slide_6.html"></iframe></div></div>
+<div class="scene" id="s-end">
+<div class="complete">
+<h2>🎉 恭喜完成本次课程！</h2>
+<p>你已经学习了导游人员及执业许可的全部内容<br>继续加油，下一课见！</p>
+<br>
+<button class="btn btn-next" onclick="location.href='../'">返回课程目录</button>
+</div>
+</div>
+<div class="ctrl">
+<button class="btn btn-prev" id="btnPrev" onclick="go(cur-1)">←</button>
+<button class="btn btn-next" id="btnNext" onclick="go(cur+1)">→</button>
+</div>
+<script>
+var scenes = [{"type": "slide", "title": "开场：导游行业的“暴富”与“凉凉”", "src": "slide_1.html"}, {"type": "interactive", "title": "模拟体验：无证带团的后果", "src": "interactive_1.html"}, {"type": "quiz", "title": "基础测试：谁才是真正的导游？", "src": "quiz_1.html"}, {"type": "slide", "title": "职业分身：地陪、全陪与领队", "src": "slide_2.html"}, {"type": "interactive", "title": "职场选择题：我是哪种导游？", "src": "interactive_2.html"}, {"type": "slide", "title": "等级制度：从“青铜”到“王者”", "src": "slide_3.html"}, {"type": "slide", "title": "升级攻略：考试与经验的双重考验", "src": "slide_4.html"}, {"type": "quiz", "title": "晋升挑战赛：你能升到哪一级？", "src": "quiz_2.html"}, {"type": "slide", "title": "职业雷区：什么情况会直接“Game Over”？", "src": "slide_5.html"}, {"type": "slide", "title": "通关结算：我的导游职业手册", "src": "slide_6.html"}];
+var cur = 0;
+var N = scenes.length;
+function init() {
+var nav = document.getElementById('nav');
+scenes.forEach(function(s,i){var d=document.createElement('div');d.className='dot';d.title=s.title;d.onclick=function(){go(i+1);};nav.appendChild(d);});
+var end=document.createElement('div');end.className='dot';end.innerHTML='✓';end.style.fontSize='8px';end.style.textAlign='center';end.style.lineHeight='9px';end.onclick=function(){go(N+1);};nav.appendChild(end);
+}
+function go(n){
+document.querySelectorAll('.scene').forEach(function(el){el.classList.remove('active');});
+if(n===0){document.getElementById('s-cover').classList.add('active');}
+else if(n===N+1){document.getElementById('s-end').classList.add('active');}
+else{var el=document.getElementById('s-'+n);if(el)el.classList.add('active');}
+cur=n;update();window.scrollTo(0,0);
+}
+function update(){
+var pct=cur===0?0:cur===N+1?100:Math.round((cur-1)/N*100);
+document.getElementById('pb').style.width=pct+'%';
+document.querySelectorAll('.dot').forEach(function(d,i){d.classList.remove('active','done');if(i+1===cur)d.classList.add('active');else if(i+1<cur)d.classList.add('done');});
+document.getElementById('btnPrev').disabled=cur===0;
+document.getElementById('btnNext').disabled=cur===N+1;
+}
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();if(cur<N+1)go(cur+1);}if(e.key==='ArrowLeft'){e.preventDefault();if(cur>0)go(cur-1);}});
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:20px;display:flex;flex-direction:column;align-items:center}
+h2{font-size:clamp(18px,3vw,24px);margin-bottom:8px;color:#f1f5f9;text-align:center}
+.sub{font-size:14px;color:#64748b;margin-bottom:20px;text-align:center}
+.progress{margin-bottom:20px;font-size:14px;color:#94a3b8}
+.card{width:100%;max-width:640px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:28px;margin-bottom:20px}
+.q-text{font-size:clamp(15px,2.5vw,18px);font-weight:600;margin-bottom:20px;line-height:1.7}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{padding:14px 18px;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);border-radius:12px;cursor:pointer;transition:all .3s;font-size:15px;line-height:1.5;text-align:left;font-family:inherit;color:#e2e8f0;width:100%}
+.opt:hover{border-color:#60a5fa;background:rgba(96,165,250,.1)}
+.opt.correct{border-color:#22c55e;background:rgba(34,197,94,.15)}
+.opt.wrong{border-color:#ef4444;background:rgba(239,68,68,.15)}
+.fb{margin-top:16px;padding:14px;border-radius:10px;font-size:14px;line-height:1.6;display:none}
+.fb.show{display:block}
+.fb.right{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86efac}
+.fb.wrong{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.next-btn{margin-top:20px;padding:12px 32px;border:none;border-radius:30px;font-size:16px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;font-family:inherit;display:none}
+.next-btn.show{display:block}
+.pts{margin-top:12px;font-size:14px;color:#fbbf24;text-align:center}
+</style>
+</head>
+<body>
+<h2>课堂测验</h2>
+<p class="sub">检验你的学习成果</p>
+<div id="app"></div>
+<script>
+var questions = [{"id": "q1", "type": "single", "question": "根据《导游人员管理条例》，在境内从事导游执业活动必须取得的法定证件是：", "options": [{"value": "A", "label": "导游人员资格证"}, {"value": "B", "label": "导游证"}, {"value": "C", "label": "旅行社经理资格证"}, {"value": "D", "label": "领队证"}], "answer": ["B"], "analysis": "导游证是准予从事导游活动的法定证件。导游人员资格证仅代表通过了考试，具备申请导游证的条件，但未申领导游证前不得执业。经理资格证和领队证分别对应不同的管理岗位和业务范围。", "points": 10, "hasAnswer": true}, {"id": "q2", "type": "multiple", "question": "下列关于导游人员执业条件的表述中，正确的有（多选）：", "options": [{"value": "A", "label": "必须持有导游证"}, {"value": "B", "label": "必须接受旅行社的委派"}, {"value": "C", "label": "可以自行通过社交软件承揽导游业务"}, {"value": "D", "label": "应当在执业过程中佩戴导游证"}], "answer": ["A", "B", "D"], "analysis": "根据规定，导游执业必须满足三要素：一是持有法定导游证；二是受旅行社委派或行业组织委派；三是执业时佩戴证件。导游不得私自承揽业务，因此选项C错误。", "points": 15, "hasAnswer": true}];
+var current = 0;
+var total = questions.length;
+var score = 0;
+var answered = false;
+var qData = null;
+function render() {
+  var app = document.getElementById('app');
+  if (current >= total) {
+    var pct = Math.round(score / total * 100);
+    var msg = pct >= 80 ? '掌握得很好！' : pct >= 60 ? '基本合格，继续加油！' : '建议重新学习本节内容';
+    app.innerHTML = '<div class="card" style="text-align:center"><h2 style="color:#22c55e;font-size:28px;margin-bottom:12px">测验完成！</h2><p style="font-size:36px;font-weight:700;color:#f1f5f9;margin:12px 0">' + score + '/' + total + '</p><p style="color:#94a3b8;font-size:18px">' + pct + '% ' + msg + '</p></div>';
+    return;
+  }
+  qData = questions[current];
+  var html = '<div class="progress">第 ' + (current+1) + ' / ' + total + ' 题</div>';
+  html += '<div class="card"><div class="q-text">' + (current+1) + '. ' + qData.question + '</div><div class="opts">';
+  qData.options.forEach(function(opt) {
+    html += '<button class="opt" onclick="selectOpt(this,\'' + opt.value + '\')">' + opt.value + '. ' + opt.label + '</button>';
+  });
+  html += '</div><div class="fb" id="fb"></div><div class="pts" id="pts"></div></div>';
+  html += '<button class="next-btn" id="nextBtn" onclick="nextQ()">' + (current + 1 < total ? '下一题 →' : '查看结果') + '</button>';
+  app.innerHTML = html;
+}
+function selectOpt(btn, val) {
+  if (answered) return;
+  answered = true;
+  var correct = qData.answer;
+  var fb = document.getElementById('fb');
+  var pts = document.getElementById('pts');
+  document.querySelectorAll('.opt').forEach(function(o) { o.disabled = true; });
+  if (val === correct) {
+    btn.classList.add('correct');
+    score++;
+    fb.className = 'fb show right';
+    fb.innerHTML = '\u2713 正确！' + (qData.analysis ? '<br><br>' + qData.analysis : '');
+    pts.innerHTML = '+' + (qData.points || 1) + ' \u5206';
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.opt').forEach(function(o) {
+      if (o.textContent.trim().startsWith(correct + '.')) o.classList.add('correct');
+    });
+    fb.className = 'fb show wrong';
+    fb.innerHTML = '\u2717 错误！正确答案：' + correct + (qData.analysis ? '<br><br>' + qData.analysis : '');
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+function nextQ() { current++; answered = false; qData = null; render(); }
+render();
+</script>
+</body>
+</html>

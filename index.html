@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅游政策与法规 - 在线课程</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #94a3b8;
+            line-height: 1.8;
+        }
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            width: 100%;
+            max-width: 900px;
+        }
+        .course-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .course-card:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(96,165,250,0.5);
+            transform: translateY(-4px);
+        }
+        .course-num {
+            font-size: 13px;
+            color: #60a5fa;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .course-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #f1f5f9;
+        }
+        .course-files {
+            list-style: none;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        .course-files li {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .course-files li:last-child { border-bottom: none; }
+        .arrow {
+            color: #60a5fa;
+            margin-left: auto;
+        }
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            color: #475569;
+            font-size: 13px;
+        }
+        .building {
+            display: inline-block;
+            background: linear-gradient(90deg, #fbbf24, #f97316);
+            color: #1a1a2e;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="badge">📚 高职高专在线课程</div>
+        <h1>旅游政策与法规</h1>
+        <p class="subtitle">导游法规 · 智慧旅游 · 旅游行业政策解读<br>点击课程卡片即可开始学习</p>
+    </div>
+
+    <div class="course-grid">
+        <!-- 课程01 -->
+        <div class="course-card" onclick="location.href='课程01/01_模拟体验：无证带团的后果.html'">
+            <div class="course-num">课程 01</div>
+            <div class="course-title">导游人员及执业许可</div>
+            <ul class="course-files">
+                <li>🎮 模拟体验：无证带团的后果 <span class="arrow">→</span></li>
+                <li>❓ 职场选择题：我是哪种导游？ <span class="arrow">→</span></li>
+            </ul>
+        </div>
+
+        <!-- 正在建设 -->
+        <div class="course-card" style="opacity:0.5; cursor:default;">
+            <div class="course-num">🚧 建设中</div>
+            <div class="course-title">更多课程陆续上线</div>
+            <p style="font-size:14px; color:#94a3b8; margin-top:8px;">
+                课程 02 - 36 正在制作中...<br>
+                完成后自动更新
+            </p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>📖 持续建设 · 每一节课都是独立交互课件</p>
+    </div>
+</body>
+</html>

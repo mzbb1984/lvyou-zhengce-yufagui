@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:20px;display:flex;flex-direction:column;align-items:center}
+h2{font-size:clamp(18px,3vw,24px);margin-bottom:8px;color:#f1f5f9;text-align:center}
+.sub{font-size:14px;color:#64748b;margin-bottom:20px;text-align:center}
+.progress{margin-bottom:20px;font-size:14px;color:#94a3b8}
+.card{width:100%;max-width:640px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:28px;margin-bottom:20px}
+.q-text{font-size:clamp(15px,2.5vw,18px);font-weight:600;margin-bottom:20px;line-height:1.7}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{padding:14px 18px;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);border-radius:12px;cursor:pointer;transition:all .3s;font-size:15px;line-height:1.5;text-align:left;font-family:inherit;color:#e2e8f0;width:100%}
+.opt:hover{border-color:#60a5fa;background:rgba(96,165,250,.1)}
+.opt.correct{border-color:#22c55e;background:rgba(34,197,94,.15)}
+.opt.wrong{border-color:#ef4444;background:rgba(239,68,68,.15)}
+.fb{margin-top:16px;padding:14px;border-radius:10px;font-size:14px;line-height:1.6;display:none}
+.fb.show{display:block}
+.fb.right{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86efac}
+.fb.wrong{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.next-btn{margin-top:20px;padding:12px 32px;border:none;border-radius:30px;font-size:16px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;font-family:inherit;display:none}
+.next-btn.show{display:block}
+.pts{margin-top:12px;font-size:14px;color:#fbbf24;text-align:center}
+</style>
+</head>
+<body>
+<h2>课堂测验</h2>
+<p class="sub">检验你的学习成果</p>
+<div id="app"></div>
+<script>
+var questions = [{"id": "q1", "type": "single", "question": "导游员小王于2021年6月通过全国导游资格考试并领取了导游证。若其在带团过程中表现优秀且无违规记录，根据现行规定，他最早可以在哪一年参加中级导游等级考试？", "options": [{"value": "A", "label": "2022年"}, {"value": "B", "label": "2023年"}, {"value": "C", "label": "2024年"}, {"value": "D", "label": "2025年"}], "answer": ["C"], "analysis": "根据《导游等级划分与评定》，申报中级导游等级考试的基本条件之一是取得导游证满3年。小王2021年拿证，到2024年满3年，因此最早报考时间为2024年。", "points": 30, "hasAnswer": true}, {"id": "q2", "type": "single", "question": "在导游等级晋升的考评制度中，关于“学历”的作用，下列说法正确的是：", "options": [{"value": "A", "label": "硕士研究生毕业后可直接跳过初级，报考高级导游"}, {"value": "B", "label": "拥有本科学历的导游从初级晋升中级时，执业年限可缩短为1年"}, {"value": "C", "label": "学历背景是申报高级和特级导游的重要参考，但在执业年限要求上通常对所有学历一视同仁"}, {"value": "D", "label": "大学本科及以上学历持有者在从中级晋升高级导游时，相较于大专学历可能在申报门槛或评审权重上更具优势"}], "answer": ["D"], "analysis": "学历在导游晋升中起到重要的调节作用。通常情况下，高学历者在申报高级导游或特级导游时，对其学术成果和专业素养的评价标准更高，且在部分省份的评审细则中，本科及以上学历是申报高级别导游的重要基础或加分项。选项A、B、C关于免考或大幅缩减年限的描述不符合现行通用国家标准。", "points": 30, "hasAnswer": true}, {"id": "q3", "type": "short_answer", "question": "某高级导游拟申报“特级导游”等级。请根据现行等级评定标准，概括申报特级导游在“工作资历”与“专业成果”两方面必须达到的核心要求。", "commentPrompt": "详细评分标准：(1) 工作资历：明确提到取得高级导游资格满5年且执业业绩突出 - 40%；(2) 专业成果：提到有高水平的学术论文、专著或在旅游教材编写中有突出贡献 - 30%；(3) 行业影响：提到在行业内具有极高声誉或对导游队伍建设有重大贡献 - 30%。", "analysis": "申报特级导游的核心条件包括：1. 资历要求：取得高级导游等级满5年，且在带团、培训等方面有卓越表现，无重大投诉。2. 专业成果：在国内外核心期刊发表过高水平的旅游学术论文，或出版过具有行业影响力的专业专著，或主持过省级以上旅游科研课题。3. 行业贡献：在导游人才培养或行业标准制定中发挥了领军作用。", "points": 40, "hasAnswer": false}];
+var current = 0;
+var total = questions.length;
+var score = 0;
+var answered = false;
+var qData = null;
+function render() {
+  var app = document.getElementById('app');
+  if (current >= total) {
+    var pct = Math.round(score / total * 100);
+    var msg = pct >= 80 ? '掌握得很好！' : pct >= 60 ? '基本合格，继续加油！' : '建议重新学习本节内容';
+    app.innerHTML = '<div class="card" style="text-align:center"><h2 style="color:#22c55e;font-size:28px;margin-bottom:12px">测验完成！</h2><p style="font-size:36px;font-weight:700;color:#f1f5f9;margin:12px 0">' + score + '/' + total + '</p><p style="color:#94a3b8;font-size:18px">' + pct + '% ' + msg + '</p></div>';
+    return;
+  }
+  qData = questions[current];
+  var html = '<div class="progress">第 ' + (current+1) + ' / ' + total + ' 题</div>';
+  html += '<div class="card"><div class="q-text">' + (current+1) + '. ' + qData.question + '</div><div class="opts">';
+  qData.options.forEach(function(opt) {
+    html += '<button class="opt" onclick="selectOpt(this,\'' + opt.value + '\')">' + opt.value + '. ' + opt.label + '</button>';
+  });
+  html += '</div><div class="fb" id="fb"></div><div class="pts" id="pts"></div></div>';
+  html += '<button class="next-btn" id="nextBtn" onclick="nextQ()">' + (current + 1 < total ? '下一题 →' : '查看结果') + '</button>';
+  app.innerHTML = html;
+}
+function selectOpt(btn, val) {
+  if (answered) return;
+  answered = true;
+  var correct = qData.answer;
+  var fb = document.getElementById('fb');
+  var pts = document.getElementById('pts');
+  document.querySelectorAll('.opt').forEach(function(o) { o.disabled = true; });
+  if (val === correct) {
+    btn.classList.add('correct');
+    score++;
+    fb.className = 'fb show right';
+    fb.innerHTML = '\u2713 正确！' + (qData.analysis ? '<br><br>' + qData.analysis : '');
+    pts.innerHTML = '+' + (qData.points || 1) + ' \u5206';
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.opt').forEach(function(o) {
+      if (o.textContent.trim().startsWith(correct + '.')) o.classList.add('correct');
+    });
+    fb.className = 'fb show wrong';
+    fb.innerHTML = '\u2717 错误！正确答案：' + correct + (qData.analysis ? '<br><br>' + qData.analysis : '');
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+function nextQ() { current++; answered = false; qData = null; render(); }
+render();
+</script>
+</body>
+</html>
