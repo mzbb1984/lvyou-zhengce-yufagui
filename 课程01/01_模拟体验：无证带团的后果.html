@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>模拟体验：无证带团的后果</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+
+        body {
+            background-color: #0f172a;
+            color: var(--light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 100%;
+            max-height: 600px;
+            background: #cbd5e1;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* UI Layers */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stats-box {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            pointer-events: auto;
+        }
+
+        .risk-meter {
+            width: 200px;
+            height: 20px;
+            background: #475569;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+            border: 2px solid #1e293b;
+        }
+
+        #risk-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
+            transition: width 0.3s ease;
+        }
+
+        /* Game Screens */
+        .screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        .hidden { display: none !important; }
+
+        h1 { font-size: 2rem; margin-bottom: 1rem; color: var(--warning); }
+        p { margin-bottom: 1.5rem; line-height: 1.6; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            pointer-events: auto;
+        }
+
+        .btn:hover { background: #1d4ed8; transform: scale(1.05); }
+        .btn:active { transform: scale(0.95); }
+
+        canvas {
+            display: block;
+            background: #e2e8f0;
+            cursor: crosshair;
+        }
+
+        /* Game Controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            pointer-events: auto;
+            z-index: 20;
+        }
+
+        .action-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            border: 4px solid white;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        #btn-legal { background: var(--success); }
+        #btn-illegal { background: var(--danger); }
+        .action-btn.active { transform: scale(0.9); box-shadow: inset 0 4px 6px rgba(0,0,0,0.4); border-color: #cbd5e1; }
+
+        /* Achievement Toast */
+        #toast {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--warning);
+            color: var(--dark);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 200;
+        }
+
+        #toast.show { transform: translateX(-50%) translateY(0); }
+
+        .law-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            max-width: 500px;
+            border-left: 4px solid var(--danger);
+        }
+
+        .stat-val { color: var(--warning); font-weight: bold; font-size: 1.2rem; }
+    </style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const katexOptions = {
+        delimiters: [
+            {left: '\\[', right: '\\]', display: true},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false,
+        strict: false,
+        trust: true
+    };
+
+    let renderTimeout;
+    function safeRender() {
+        if (renderTimeout) clearTimeout(renderTimeout);
+        renderTimeout = setTimeout(() => {
+            renderMathInElement(document.body, katexOptions);
+        }, 100);
+    }
+
+    renderMathInElement(document.body, katexOptions);
+
+    const observer = new MutationObserver((mutations) => {
+        let shouldRender = false;
+        mutations.forEach((mutation) => {
+            if (mutation.target &&
+                mutation.target.className &&
+                typeof mutation.target.className === 'string' &&
+                mutation.target.className.includes('katex')) {
+                return;
+            }
+            shouldRender = true;
+        });
+
+        if (shouldRender) {
+            safeRender();
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+
+    setInterval(() => {
+        const text = document.body.innerText;
+        if (text.includes('\\(') || text.includes('$$')) {
+            safeRender();
+        }
+    }, 2000);
+});
+</script>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="ui-layer hud">
+        <div class="stats-box">
+            <div>团队满意度: <span id="stat-sat" class="stat-val">100%</span></div>
+            <div>违规风险值</div>
+            <div class="risk-meter"><div id="risk-fill"></div></div>
+        </div>
+        <div class="stats-box" style="text-align: right; border-left: 0; border-right: 4px solid var(--primary);">
+            <div>当前收益: <span id="stat-money" class="stat-val">￥0</span></div>
+            <div id="status-tag" style="font-size: 12px; color: var(--success);">● 合规执业中</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div id="btn-legal" class="action-btn active" onmousedown="setMode('legal')" ontouchstart="setMode('legal')">
+            <span>🛡️</span>
+            <span>合规执业</span>
+        </div>
+        <div id="btn-illegal" class="action-btn" onmousedown="setMode('illegal')" ontouchstart="setMode('illegal')">
+            <span>🔥</span>
+            <span>无证私带</span>
+        </div>
+    </div>
+
+    <div id="toast">🏆 获得成就：守法公民</div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen">
+        <h1>违规带团模拟体验</h1>
+        <p>
+            你是一名旅游从业者。你的目标是带领“地陪”团队完成景点游览。<br>
+            <b>合规执业</b>：收益稳定，风险为零。<br>
+            <b>无证私带</b>：收益翻倍，但面临旅游执法部门的严厉查处！
+        </p>
+        <div style="margin-bottom: 20px; text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+            <li>🖱️ 鼠标/手指拖动 <b>导游小旗</b> 引导游客</li>
+            <li>🚀 切换模式平衡 <b>收益</b> 与 <b>风险</b></li>
+            <li>👮 避开 <b>执法人员</b> 的扫描视线</li>
+        </div>
+        <button class="btn" onclick="startGame()">开始模拟</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="over-screen" class="screen hidden">
+        <h1 id="over-title">被现场查获！</h1>
+        <div id="over-reason" style="margin-bottom: 15px; color: var(--danger); font-weight: bold;"></div>
+        <div class="law-box">
+            <p id="law-content" style="margin: 0; text-align: left;"></p>
+        </div>
+        <div style="margin: 20px 0;">
+            <p>最终收益: <span id="final-money" class="stat-val"></span></p>
+            <p>违规次数: <span id="final-violations" class="stat-val"></span></p>
+        </div>
+        <button class="btn" onclick="location.reload()">重新开始</button>
+    </div>
+</div>
+
+<script type="application/json" id="widget-config">
+{
+  "type": "game",
+  "gameType": "action",
+  "scoring": {
+    "correctPoints": 10,
+    "speedBonus": 5
+  }
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const riskFill = document.getElementById('risk-fill');
+    const statSat = document.getElementById('stat-sat');
+    const statMoney = document.getElementById('stat-money');
+    const statusTag = document.getElementById('status-tag');
+    const toast = document.getElementById('toast');
+
+    // Game Constants
+    const LAW_TEXTS = {
+        UNLICENSED: "《旅游法》第102条：未取得导游证或者领队证从事导游、领队业务的，由旅游主管部门责令改正，没收违法所得，并处二千元以上二万元以下罚款。",
+        NO_CONTRACT: "《旅行社条例》：旅行社委派无证人员带团，处二万元以上十万元以下罚款；情节严重的，责令停业整顿或吊销许可证。"
+    };
+
+    // Game State
+    let gameState = 'START';
+    let player = { x: 100, y: 300, targetX: 100, targetY: 300, radius: 15, color: '#2563eb' };
+    let tourists = [];
+    let inspectors = [];
+    let spots = [];
+    let score = 0;
+    let risk = 0;
+    let satisfaction = 100;
+    let mode = 'legal'; // 'legal' or 'illegal'
+    let violations = 0;
+    let money = 0;
+    let lastTime = 0;
+    let achievements = new Set();
+
+    function init() {
+        resize();
+        tourists = [];
+        for(let i=0; i<8; i++) {
+            tourists.push({
+                x: player.x,
+                y: player.y,
+                offX: (Math.random() - 0.5) * 40,
+                offY: (Math.random() - 0.5) * 40,
+                speed: 0.05 + Math.random() * 0.05
+            });
+        }
+
+        // Add scenic spots
+        spots = [
+            { x: 150, y: 150, name: '名胜古迹', visited: false },
+            { x: 650, y: 150, name: '风景名胜', visited: false },
+            { x: 650, y: 450, name: '民俗村', visited: false },
+            { x: 150, y: 450, name: '博物馆', visited: false }
+        ];
+
+        // Add inspectors
+        inspectors = [
+            { x: 400, y: 100, tx: 400, ty: 500, speed: 1.5, angle: 0, range: 120, sweep: 0.8 },
+            { x: 100, y: 300, tx: 700, ty: 300, speed: 2, angle: Math.PI, range: 100, sweep: 1.2 }
+        ];
+    }
+
+    function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+    }
+
+    window.startGame = function() {
+        document.getElementById('start-screen').classList.add('hidden');
+        gameState = 'PLAYING';
+        init();
+        requestAnimationFrame(gameLoop);
+        showToast("📢 游览开始：请合法执业");
+    };
+
+    window.setMode = function(newMode) {
+        if (gameState !== 'PLAYING') return;
+        mode = newMode;
+        document.getElementById('btn-legal').classList.toggle('active', mode === 'legal');
+        document.getElementById('btn-illegal').classList.toggle('active', mode === 'illegal');
+        
+        if (mode === 'illegal') {
+            statusTag.innerText = "⚠ 违规私带中 (收益x2)";
+            statusTag.style.color = "var(--danger)";
+            player.color = "var(--danger)";
+            violations++;
+            if (!achievements.has('risk')) {
+                showToast("⚡ 风险警示：利益伴随代价");
+                achievements.add('risk');
+            }
+        } else {
+            statusTag.innerText = "● 合规执业中";
+            statusTag.style.color = "var(--success)";
+            player.color = "var(--primary)";
+        }
+    }
+
+    function showToast(text) {
+        toast.innerText = text;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Input Handling
+    const handleMove = (e) => {
+        if (gameState !== 'PLAYING') return;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        player.targetX = clientX - rect.left;
+        player.targetY = clientY - rect.top;
+    };
+
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('touchmove', handleMove);
+
+    function gameLoop(timestamp) {
+        if (gameState !== 'PLAYING') return;
+        
+        const deltaTime = timestamp - lastTime;
+        lastTime = timestamp;
+
+        update();
+        draw();
+        
+        requestAnimationFrame(gameLoop);
+    }
+
+    function update() {
+        // Move Player
+        player.x += (player.targetX - player.x) * 0.1;
+        player.y += (player.targetY - player.y) * 0.1;
+
+        // Move Tourists (trailing effect)
+        tourists.forEach((t, i) => {
+            const targetX = player.x + t.offX;
+            const targetY = player.y + t.offY;
+            t.x += (targetX - t.x) * t.speed;
+            t.y += (targetY - t.y) * t.speed;
+        });
+
+        // Update Inspectors
+        inspectors.forEach(ins => {
+            // Patrol movement
+            const dist = Math.hypot(ins.tx - ins.x, ins.ty - ins.y);
+            if (dist < 5) {
+                const tempX = ins.x; const tempY = ins.y;
+                ins.tx = ins.startX || 400; ins.ty = ins.startY || 100;
+                ins.startX = tempX; ins.startY = tempY;
+            }
+            const angleToTarget = Math.atan2(ins.ty - ins.y, ins.tx - ins.x);
+            ins.x += Math.cos(angleToTarget) * ins.speed;
+            ins.y += Math.sin(angleToTarget) * ins.speed;
+            ins.angle = angleToTarget;
+
+            // Detection logic
+            if (mode === 'illegal') {
+                const dx = player.x - ins.x;
+                const dy = player.y - ins.y;
+                const distToPlayer = Math.hypot(dx, dy);
+                const angleToPlayer = Math.atan2(dy, dx);
+                
+                // Check if in cone
+                let angleDiff = Math.abs(angleToPlayer - ins.angle);
+                while(angleDiff > Math.PI) angleDiff = Math.abs(angleDiff - 2*Math.PI);
+
+                if (distToPlayer < ins.range && angleDiff < ins.sweep) {
+                    gameOver("在未持证状态下被执法人员当场拦截！", "UNLICENSED");
+                }
+            }
+        });
+
+        // Mode consequences
+        if (mode === 'illegal') {
+            risk = Math.min(100, risk + 0.15);
+            money += 2;
+        } else {
+            risk = Math.max(0, risk - 0.05);
+            money += 0.5;
+        }
+        
+        riskFill.style.width = risk + '%';
+        statMoney.innerText = `￥${Math.floor(money)}`;
+
+        // Risk threshold penalty
+        if (risk >= 100) {
+            gameOver("违规行为被大数据监控平台预警，执法部门立案调查！", "NO_CONTRACT");
+        }
+
+        // Scenic spots
+        spots.forEach(s => {
+            const d = Math.hypot(player.x - s.x, player.y - s.y);
+            if (d < 40 && !s.visited) {
+                s.visited = true;
+                money += 500;
+                showToast(`✅ 到达景点：${s.name}`);
+                if (spots.every(spot => spot.visited)) {
+                    // Reset spots for endless gameplay or end? Let's refresh them
+                    setTimeout(() => spots.forEach(sp => sp.visited = false), 2000);
+                }
+            }
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Map Grid
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        for(let i=0; i<canvas.width; i+=50) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+        }
+        for(let i=0; i<canvas.height; i+=50) {
+            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+        }
+
+        // Draw Spots
+        spots.forEach(s => {
+            ctx.fillStyle = s.visited ? '#94a3b8' : '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, 30, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(s.name, s.x, s.y + 5);
+        });
+
+        // Draw Inspectors Vision
+        inspectors.forEach(ins => {
+            const gradient = ctx.createRadialGradient(ins.x, ins.y, 0, ins.x, ins.y, ins.range);
+            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+            gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(ins.x, ins.y);
+            ctx.arc(ins.x, ins.y, ins.range, ins.angle - ins.sweep, ins.angle + ins.sweep);
+            ctx.closePath();
+            ctx.fill();
+
+            // Inspector Icon
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(ins.x, ins.y, 12, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = '10px sans-serif';
+            ctx.fillText("执", ins.x, ins.y + 4);
+        });
+
+        // Draw Tourists
+        ctx.fillStyle = '#64748b';
+        tourists.forEach(t => {
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 8, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        // Draw Player (Guide)
+        ctx.fillStyle = player.color;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Guide Flag
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y - 30, 20, 15);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(player.x, player.y - 30); ctx.stroke();
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(mode === 'legal' ? "正" : "无", player.x + 10, player.y - 19);
+    }
+
+    function gameOver(reason, lawKey) {
+        gameState = 'OVER';
+        document.getElementById('over-screen').classList.remove('hidden');
+        document.getElementById('over-reason').innerText = reason;
+        document.getElementById('law-content').innerText = LAW_TEXTS[lawKey];
+        document.getElementById('final-money').innerText = `￥${Math.floor(money)}`;
+        document.getElementById('final-violations').innerText = violations + " 次";
+        
+        // Save score
+        const highscore = localStorage.getItem('tour_game_highscore') || 0;
+        if (money > highscore) {
+            localStorage.setItem('tour_game_highscore', money);
+        }
+    }
+});
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>模拟体验：无证带团的后果</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+
+        body {
+            background-color: #0f172a;
+            color: var(--light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 100%;
+            max-height: 600px;
+            background: #cbd5e1;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* UI Layers */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stats-box {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            pointer-events: auto;
+        }
+
+        .risk-meter {
+            width: 200px;
+            height: 20px;
+            background: #475569;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+            border: 2px solid #1e293b;
+        }
+
+        #risk-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
+            transition: width 0.3s ease;
+        }
+
+        /* Game Screens */
+        .screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        .hidden { display: none !important; }
+
+        h1 { font-size: 2rem; margin-bottom: 1rem; color: var(--warning); }
+        p { margin-bottom: 1.5rem; line-height: 1.6; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            pointer-events: auto;
+        }
+
+        .btn:hover { background: #1d4ed8; transform: scale(1.05); }
+        .btn:active { transform: scale(0.95); }
+
+        canvas {
+            display: block;
+            background: #e2e8f0;
+            cursor: crosshair;
+        }
+
+        /* Game Controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            pointer-events: auto;
+            z-index: 20;
+        }
+
+        .action-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            border: 4px solid white;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        #btn-legal { background: var(--success); }
+        #btn-illegal { background: var(--danger); }
+        .action-btn.active { transform: scale(0.9); box-shadow: inset 0 4px 6px rgba(0,0,0,0.4); border-color: #cbd5e1; }
+
+        /* Achievement Toast */
+        #toast {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--warning);
+            color: var(--dark);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 200;
+        }
+
+        #toast.show { transform: translateX(-50%) translateY(0); }
+
+        .law-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            max-width: 500px;
+            border-left: 4px solid var(--danger);
+        }
+
+        .stat-val { color: var(--warning); font-weight: bold; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="ui-layer hud">
+        <div class="stats-box">
+            <div>团队满意度: <span id="stat-sat" class="stat-val">100%</span></div>
+            <div>违规风险值</div>
+            <div class="risk-meter"><div id="risk-fill"></div></div>
+        </div>
+        <div class="stats-box" style="text-align: right; border-left: 0; border-right: 4px solid var(--primary);">
+            <div>当前收益: <span id="stat-money" class="stat-val">￥0</span></div>
+            <div id="status-tag" style="font-size: 12px; color: var(--success);">● 合规执业中</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div id="btn-legal" class="action-btn active" onmousedown="setMode('legal')" ontouchstart="setMode('legal')">
+            <span>🛡️</span>
+            <span>合规执业</span>
+        </div>
+        <div id="btn-illegal" class="action-btn" onmousedown="setMode('illegal')" ontouchstart="setMode('illegal')">
+            <span>🔥</span>
+            <span>无证私带</span>
+        </div>
+    </div>
+
+    <div id="toast">🏆 获得成就：守法公民</div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen">
+        <h1>违规带团模拟体验</h1>
+        <p>
+            你是一名旅游从业者。你的目标是带领“地陪”团队完成景点游览。<br>
+            <b>合规执业</b>：收益稳定，风险为零。<br>
+            <b>无证私带</b>：收益翻倍，但面临旅游执法部门的严厉查处！
+        </p>
+        <div style="margin-bottom: 20px; text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+            <li>🖱️ 鼠标/手指拖动 <b>导游小旗</b> 引导游客</li>
+            <li>🚀 切换模式平衡 <b>收益</b> 与 <b>风险</b></li>
+            <li>👮 避开 <b>执法人员</b> 的扫描视线</li>
+        </div>
+        <button class="btn" onclick="startGame()">开始模拟</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="over-screen" class="screen hidden">
+        <h1 id="over-title">被现场查获！</h1>
+        <div id="over-reason" style="margin-bottom: 15px; color: var(--danger); font-weight: bold;"></div>
+        <div class="law-box">
+            <p id="law-content" style="margin: 0; text-align: left;"></p>
+        </div>
+        <div style="margin: 20px 0;">
+            <p>最终收益: <span id="final-money" class="stat-val"></span></p>
+            <p>违规次数: <span id="final-violations" class="stat-val"></span></p>
+        </div>
+        <button class="btn" onclick="location.reload()">重新开始</button>
+    </div>
+</div>
+
+<script type="application/json" id="widget-config">
+{
+  "type": "game",
+  "gameType": "action",
+  "scoring": {
+    "correctPoints": 10,
+    "speedBonus": 5
+  }
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const riskFill = document.getElementById('risk-fill');
+    const statSat = document.getElementById('stat-sat');
+    const statMoney = document.getElementById('stat-money');
+    const statusTag = document.getElementById('status-tag');
+    const toast = document.getElementById('toast');
+
+    // Game Constants
+    const LAW_TEXTS = {
+        UNLICENSED: "《旅游法》第102条：未取得导游证或者领队证从事导游、领队业务的，由旅游主管部门责令改正，没收违法所得，并处二千元以上二万元以下罚款。",
+        NO_CONTRACT: "《旅行社条例》：旅行社委派无证人员带团，处二万元以上十万元以下罚款；情节严重的，责令停业整顿或吊销许可证。"
+    };
+
+    // Game State
+    let gameState = 'START';
+    let player = { x: 100, y: 300, targetX: 100, targetY: 300, radius: 15, color: '#2563eb' };
+    let tourists = [];
+    let inspectors = [];
+    let spots = [];
+    let score = 0;
+    let risk = 0;
+    let satisfaction = 100;
+    let mode = 'legal'; // 'legal' or 'illegal'
+    let violations = 0;
+    let money = 0;
+    let lastTime = 0;
+    let achievements = new Set();
+
+    function init() {
+        resize();
+        tourists = [];
+        for(let i=0; i<8; i++) {
+            tourists.push({
+                x: player.x,
+                y: player.y,
+                offX: (Math.random() - 0.5) * 40,
+                offY: (Math.random() - 0.5) * 40,
+                speed: 0.05 + Math.random() * 0.05
+            });
+        }
+
+        // Add scenic spots
+        spots = [
+            { x: 150, y: 150, name: '名胜古迹', visited: false },
+            { x: 650, y: 150, name: '风景名胜', visited: false },
+            { x: 650, y: 450, name: '民俗村', visited: false },
+            { x: 150, y: 450, name: '博物馆', visited: false }
+        ];
+
+        // Add inspectors
+        inspectors = [
+            { x: 400, y: 100, tx: 400, ty: 500, speed: 1.5, angle: 0, range: 120, sweep: 0.8 },
+            { x: 100, y: 300, tx: 700, ty: 300, speed: 2, angle: Math.PI, range: 100, sweep: 1.2 }
+        ];
+    }
+
+    function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+    }
+
+    window.startGame = function() {
+        document.getElementById('start-screen').classList.add('hidden');
+        gameState = 'PLAYING';
+        init();
+        requestAnimationFrame(gameLoop);
+        showToast("📢 游览开始：请合法执业");
+    };
+
+    window.setMode = function(newMode) {
+        if (gameState !== 'PLAYING') return;
+        mode = newMode;
+        document.getElementById('btn-legal').classList.toggle('active', mode === 'legal');
+        document.getElementById('btn-illegal').classList.toggle('active', mode === 'illegal');
+        
+        if (mode === 'illegal') {
+            statusTag.innerText = "⚠ 违规私带中 (收益x2)";
+            statusTag.style.color = "var(--danger)";
+            player.color = "var(--danger)";
+            violations++;
+            if (!achievements.has('risk')) {
+                showToast("⚡ 风险警示：利益伴随代价");
+                achievements.add('risk');
+            }
+        } else {
+            statusTag.innerText = "● 合规执业中";
+            statusTag.style.color = "var(--success)";
+            player.color = "var(--primary)";
+        }
+    }
+
+    function showToast(text) {
+        toast.innerText = text;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Input Handling
+    const handleMove = (e) => {
+        if (gameState !== 'PLAYING') return;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        player.targetX = clientX - rect.left;
+        player.targetY = clientY - rect.top;
+    };
+
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('touchmove', handleMove);
+
+    function gameLoop(timestamp) {
+        if (gameState !== 'PLAYING') return;
+        
+        const deltaTime = timestamp - lastTime;
+        lastTime = timestamp;
+
+        update();
+        draw();
+        
+        requestAnimationFrame(gameLoop);
+    }
+
+    function update() {
+        // Move Player
+        player.x += (player.targetX - player.x) * 0.1;
+        player.y += (player.targetY - player.y) * 0.1;
+
+        // Move Tourists (trailing effect)
+        tourists.forEach((t, i) => {
+            const targetX = player.x + t.offX;
+            const targetY = player.y + t.offY;
+            t.x += (targetX - t.x) * t.speed;
+            t.y += (targetY - t.y) * t.speed;
+        });
+
+        // Update Inspectors
+        inspectors.forEach(ins => {
+            // Patrol movement
+            const dist = Math.hypot(ins.tx - ins.x, ins.ty - ins.y);
+            if (dist < 5) {
+                const tempX = ins.x; const tempY = ins.y;
+                ins.tx = ins.startX || 400; ins.ty = ins.startY || 100;
+                ins.startX = tempX; ins.startY = tempY;
+            }
+            const angleToTarget = Math.atan2(ins.ty - ins.y, ins.tx - ins.x);
+            ins.x += Math.cos(angleToTarget) * ins.speed;
+            ins.y += Math.sin(angleToTarget) * ins.speed;
+            ins.angle = angleToTarget;
+
+            // Detection logic
+            if (mode === 'illegal') {
+                const dx = player.x - ins.x;
+                const dy = player.y - ins.y;
+                const distToPlayer = Math.hypot(dx, dy);
+                const angleToPlayer = Math.atan2(dy, dx);
+                
+                // Check if in cone
+                let angleDiff = Math.abs(angleToPlayer - ins.angle);
+                while(angleDiff > Math.PI) angleDiff = Math.abs(angleDiff - 2*Math.PI);
+
+                if (distToPlayer < ins.range && angleDiff < ins.sweep) {
+                    gameOver("在未持证状态下被执法人员当场拦截！", "UNLICENSED");
+                }
+            }
+        });
+
+        // Mode consequences
+        if (mode === 'illegal') {
+            risk = Math.min(100, risk + 0.15);
+            money += 2;
+        } else {
+            risk = Math.max(0, risk - 0.05);
+            money += 0.5;
+        }
+        
+        riskFill.style.width = risk + '%';
+        statMoney.innerText = `￥${Math.floor(money)}`;
+
+        // Risk threshold penalty
+        if (risk >= 100) {
+            gameOver("违规行为被大数据监控平台预警，执法部门立案调查！", "NO_CONTRACT");
+        }
+
+        // Scenic spots
+        spots.forEach(s => {
+            const d = Math.hypot(player.x - s.x, player.y - s.y);
+            if (d < 40 && !s.visited) {
+                s.visited = true;
+                money += 500;
+                showToast(`✅ 到达景点：${s.name}`);
+                if (spots.every(spot => spot.visited)) {
+                    // Reset spots for endless gameplay or end? Let's refresh them
+                    setTimeout(() => spots.forEach(sp => sp.visited = false), 2000);
+                }
+            }
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Map Grid
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        for(let i=0; i<canvas.width; i+=50) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+        }
+        for(let i=0; i<canvas.height; i+=50) {
+            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+        }
+
+        // Draw Spots
+        spots.forEach(s => {
+            ctx.fillStyle = s.visited ? '#94a3b8' : '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, 30, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(s.name, s.x, s.y + 5);
+        });
+
+        // Draw Inspectors Vision
+        inspectors.forEach(ins => {
+            const gradient = ctx.createRadialGradient(ins.x, ins.y, 0, ins.x, ins.y, ins.range);
+            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+            gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(ins.x, ins.y);
+            ctx.arc(ins.x, ins.y, ins.range, ins.angle - ins.sweep, ins.angle + ins.sweep);
+            ctx.closePath();
+            ctx.fill();
+
+            // Inspector Icon
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(ins.x, ins.y, 12, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = '10px sans-serif';
+            ctx.fillText("执", ins.x, ins.y + 4);
+        });
+
+        // Draw Tourists
+        ctx.fillStyle = '#64748b';
+        tourists.forEach(t => {
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 8, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        // Draw Player (Guide)
+        ctx.fillStyle = player.color;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Guide Flag
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y - 30, 20, 15);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(player.x, player.y - 30); ctx.stroke();
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(mode === 'legal' ? "正" : "无", player.x + 10, player.y - 19);
+    }
+
+    function gameOver(reason, lawKey) {
+        gameState = 'OVER';
+        document.getElementById('over-screen').classList.remove('hidden');
+        document.getElementById('over-reason').innerText = reason;
+        document.getElementById('law-content').innerText = LAW_TEXTS[lawKey];
+        document.getElementById('final-money').innerText = `￥${Math.floor(money)}`;
+        document.getElementById('final-violations').innerText = violations + " 次";
+        
+        // Save score
+        const highscore = localStorage.getItem('tour_game_highscore') || 0;
+        if (money > highscore) {
+            localStorage.setItem('tour_game_highscore', money);
+        }
+    }
+});
+</script>
+</body>
+</html>

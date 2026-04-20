@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>导游分类识别模拟器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+        }
+        body {
+            touch-action: manipulation;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow: hidden;
+            background-color: #f8fafc;
+        }
+        .control-panel {
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1);
+            z-index: 50;
+        }
+        canvas {
+            touch-action: none;
+            background: linear-gradient(to bottom, #e0f2fe, #f0f9ff);
+        }
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .slider-thumb::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        @keyframes pulse-highlight { 
+            0%, 100% { outline-color: rgba(139, 92, 246, 0.8); } 
+            50% { outline-color: rgba(139, 92, 246, 0.4); } 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .result-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const katexOptions = {
+        delimiters: [
+            {left: '\\[', right: '\\]', display: true},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false,
+        strict: false,
+        trust: true
+    };
+
+    let renderTimeout;
+    function safeRender() {
+        if (renderTimeout) clearTimeout(renderTimeout);
+        renderTimeout = setTimeout(() => {
+            renderMathInElement(document.body, katexOptions);
+        }, 100);
+    }
+
+    renderMathInElement(document.body, katexOptions);
+
+    const observer = new MutationObserver((mutations) => {
+        let shouldRender = false;
+        mutations.forEach((mutation) => {
+            if (mutation.target &&
+                mutation.target.className &&
+                typeof mutation.target.className === 'string' &&
+                mutation.target.className.includes('katex')) {
+                return;
+            }
+            shouldRender = true;
+        });
+
+        if (shouldRender) {
+            safeRender();
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+
+    setInterval(() => {
+        const text = document.body.innerText;
+        if (text.includes('\\(') || text.includes('$$')) {
+            safeRender();
+        }
+    }, 2000);
+});
+</script>
+</head>
+<body class="flex flex-col h-screen md:flex-row">
+
+    <!-- Widget Config -->
+    <script type="application/json" id="widget-config">
+    {
+      "type": "simulation",
+      "concept": "tour_guide_classification",
+      "description": "通过行程范围和地点识别导游角色：地陪、全陪、领队",
+      "variables": [
+        { "name": "location", "label": "带团地点", "min": 0, "max": 1, "default": 0, "unit": "（0境内/1境外）" },
+        { "name": "scope", "label": "服务范围", "min": 0, "max": 1, "default": 0, "unit": "（0本地/1跨省）" }
+      ],
+      "presets": [
+        { "name": "一日游接待", "variables": { "location": 0, "scope": 0 } },
+        { "name": "跨省旅行团", "variables": { "location": 0, "scope": 1 } },
+        { "name": "出境考察团", "variables": { "location": 1, "scope": 1 } }
+      ]
+    }
+    </script>
+
+    <!-- Sidebar / Controls -->
+    <div id="controls" class="w-full md:w-80 bg-white p-6 overflow-y-auto flex-shrink-0 border-b md:border-b-0 md:border-r border-gray-200">
+        <h1 class="text-xl font-bold text-gray-800 mb-2">导游分类识别</h1>
+        <p class="text-sm text-gray-500 mb-6">设置带团参数，观察职业路径变化</p>
+
+        <div class="space-y-6">
+            <!-- Location Switch -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">带团地点 (境内 vs 境外)</label>
+                <div class="flex items-center justify-between bg-gray-100 p-1 rounded-lg">
+                    <button id="loc-0" onclick="updateVar('location', 0)" class="flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm">境内</button>
+                    <button id="loc-1" onclick="updateVar('location', 1)" class="flex-1 py-2 text-sm rounded-md transition-all text-gray-500">境外</button>
+                </div>
+                <input type="hidden" id="location-slider" data-var="location" value="0">
+            </div>
+
+            <!-- Scope Switch -->
+            <div id="scope-container">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">服务范围 (本地 vs 跨省)</label>
+                <div class="flex items-center justify-between bg-gray-100 p-1 rounded-lg">
+                    <button id="scope-0" onclick="updateVar('scope', 0)" class="flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm">本地接待</button>
+                    <button id="scope-1" onclick="updateVar('scope', 1)" class="flex-1 py-2 text-sm rounded-md transition-all text-gray-500">全程跨省</button>
+                </div>
+                <input type="hidden" id="scope-slider" data-var="scope" value="0">
+            </div>
+
+            <!-- Presets -->
+            <div class="pt-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">快速预设</label>
+                <div class="grid grid-cols-1 gap-2">
+                    <button onclick="applyPreset(0, 0)" class="text-xs py-2 px-3 bg-indigo-50 text-indigo-700 rounded border border-indigo-100 hover:bg-indigo-100 transition-colors">地接社任务 (地陪)</button>
+                    <button onclick="applyPreset(0, 1)" class="text-xs py-2 px-3 bg-indigo-50 text-indigo-700 rounded border border-indigo-100 hover:bg-indigo-100 transition-colors">组团社全程 (全陪)</button>
+                    <button onclick="applyPreset(1, 1)" class="text-xs py-2 px-3 bg-indigo-50 text-indigo-700 rounded border border-indigo-100 hover:bg-indigo-100 transition-colors">国际领队任务 (领队)</button>
+                </div>
+            </div>
+
+            <!-- Main Button -->
+            <div class="pt-6">
+                <button id="main-btn" onclick="handleMainAction()" class="w-full py-4 bg-violet-600 text-white font-bold rounded-xl shadow-lg hover:bg-violet-700 active:transform active:scale-95 transition-all text-lg">
+                    启动模拟
+                </button>
+                <button id="reset-btn" onclick="resetSimulation()" class="w-full mt-3 py-2 text-gray-500 text-sm hover:underline">
+                    重置场景
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas Area -->
+    <div class="flex-1 relative bg-gray-50 flex flex-col">
+        <!-- HUD / Status -->
+        <div id="hud" class="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none z-10">
+            <div class="bg-white/90 backdrop-blur p-3 rounded-lg shadow-sm border border-gray-200">
+                <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">当前状态</div>
+                <div id="status-display" class="text-lg font-mono font-bold text-gray-800">就绪</div>
+            </div>
+            <div class="bg-white/90 backdrop-blur p-3 rounded-lg shadow-sm border border-gray-200 text-right">
+                <div class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">识别结果</div>
+                <div id="result-display" class="text-lg font-bold text-violet-600">等待启动...</div>
+            </div>
+        </div>
+
+        <!-- Simulation Canvas -->
+        <div class="flex-1 w-full relative">
+            <canvas id="simCanvas" class="w-full h-full"></canvas>
+            
+            <!-- Information Card (Overlay at end) -->
+            <div id="info-card" class="hidden absolute inset-0 flex items-center justify-center p-6 z-20">
+                <div class="bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-2xl border-t-4 border-violet-500 max-w-sm w-full result-card">
+                    <h3 id="card-title" class="text-2xl font-black text-gray-800 mb-2">地陪导游</h3>
+                    <p id="card-desc" class="text-gray-600 leading-relaxed mb-4">负责在旅游目的地接待旅游团，提供导游讲解、生活服务及协调工作。</p>
+                    <div class="bg-gray-100 p-3 rounded-lg flex items-center gap-3">
+                        <div class="w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center">
+                            <span class="text-xl">🏆</span>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <strong>职业关键点：</strong><span id="card-key">熟悉本地文化，极强的协调能力。</span>
+                        </div>
+                    </div>
+                    <button onclick="resetSimulation()" class="mt-6 w-full py-3 bg-gray-800 text-white rounded-xl font-bold">再次模拟</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+/**
+ * Simulation State & Logic
+ */
+const state = {
+    running: false,
+    paused: false,
+    ended: false,
+    progress: 0,
+    location: 0, // 0: Domestic, 1: International
+    scope: 0,    // 0: Local, 1: Inter-provincial
+    lastTimestamp: 0
+};
+
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const infoCard = document.getElementById('info-card');
+const mainBtn = document.getElementById('main-btn');
+
+let width, height;
+
+// Simulation Config
+const config = {
+    speed: 0.005,
+    cityRadius: 40,
+    guidePos: { x: 0, y: 0 },
+    targets: []
+};
+
+function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    width = canvas.clientWidth;
+    height = canvas.clientHeight;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+    setupTargets();
+}
+
+function setupTargets() {
+    // Define logical positions for "Home City", "Other City", "Foreign Country"
+    const centerY = height / 2;
+    config.targets = [
+        { x: width * 0.25, y: centerY, label: "出发城市" },
+        { x: width * 0.5, y: centerY, label: "目的地 (境内)" },
+        { x: width * 0.75, y: centerY, label: "目的地 (境外)" }
+    ];
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+function updateVar(name, val) {
+    state[name] = val;
+    
+    // UI Feedback
+    if (name === 'location') {
+        document.getElementById('loc-0').className = val === 0 ? "flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm" : "flex-1 py-2 text-sm rounded-md transition-all text-gray-500";
+        document.getElementById('loc-1').className = val === 1 ? "flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm" : "flex-1 py-2 text-sm rounded-md transition-all text-gray-500";
+        
+        // Logical constraint: International always implies "National scope" or higher in this sim's context
+        if (val === 1) {
+            updateVar('scope', 1);
+            document.getElementById('scope-container').style.opacity = '0.5';
+            document.getElementById('scope-container').style.pointerEvents = 'none';
+        } else {
+            document.getElementById('scope-container').style.opacity = '1';
+            document.getElementById('scope-container').style.pointerEvents = 'auto';
+        }
+    } else if (name === 'scope') {
+        document.getElementById('scope-0').className = val === 0 ? "flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm" : "flex-1 py-2 text-sm rounded-md transition-all text-gray-500";
+        document.getElementById('scope-1').className = val === 1 ? "flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm" : "flex-1 py-2 text-sm rounded-md transition-all text-gray-500";
+    }
+
+    document.getElementById(name + '-slider').value = val;
+    resetSimulation();
+}
+
+function applyPreset(loc, scp) {
+    updateVar('location', loc);
+    updateVar('scope', scp);
+}
+
+function handleMainAction() {
+    if (state.ended) {
+        resetSimulation();
+        startSimulation();
+    } else if (state.running) {
+        pauseSimulation();
+    } else {
+        startSimulation();
+    }
+}
+
+function startSimulation() {
+    state.running = true;
+    state.paused = false;
+    state.ended = false;
+    mainBtn.innerText = "暂停模拟";
+    document.getElementById('status-display').innerText = "模拟中...";
+    document.getElementById('status-display').className = "text-lg font-mono font-bold text-green-500";
+    requestAnimationFrame(animate);
+}
+
+function pauseSimulation() {
+    state.running = false;
+    state.paused = true;
+    mainBtn.innerText = "继续模拟";
+    document.getElementById('status-display').innerText = "已暂停";
+    document.getElementById('status-display').className = "text-lg font-mono font-bold text-orange-500";
+}
+
+function resetSimulation() {
+    state.running = false;
+    state.paused = false;
+    state.ended = false;
+    state.progress = 0;
+    infoCard.classList.add('hidden');
+    mainBtn.innerText = "启动模拟";
+    document.getElementById('status-display').innerText = "就绪";
+    document.getElementById('status-display').className = "text-lg font-mono font-bold text-gray-800";
+    document.getElementById('result-display').innerText = "等待启动...";
+    draw();
+}
+
+function onSimulationEnd() {
+    state.running = false;
+    state.ended = true;
+    mainBtn.innerText = "重新开始";
+    document.getElementById('status-display').innerText = "模拟完成";
+    
+    // Determine Result
+    let result = { title: "", desc: "", key: "" };
+    
+    if (state.location === 1) {
+        result = {
+            title: "领队 (Tour Leader)",
+            desc: "出境旅游领队是指受旅行社委派，全权代表旅行社带领旅游团赴境外旅游，并为旅游团提供领队服务的导游。",
+            key: "须具备领队资格，精通目的地语言，熟悉海关流程。"
+        };
+    } else if (state.scope === 1) {
+        result = {
+            title: "全陪 (National Escort)",
+            desc: "全程陪同导游人员。受组团社委派，作为组团社的代表，在领队/地陪的配合下实施接待计划。",
+            key: "跨省协调能力，负责全程质量监控，处理旅途突发事件。"
+        };
+    } else {
+        result = {
+            title: "地陪 (Local Escort)",
+            desc: "地方陪同导游人员。受地接社委派，在旅游目的地为旅游团提供讲解和生活服务的人员。",
+            key: "深厚的本地历史文化知识，熟悉当地路线和突发状况处理。"
+        };
+    }
+
+    document.getElementById('result-display').innerText = result.title;
+    document.getElementById('card-title').innerText = result.title;
+    document.getElementById('card-desc').innerText = result.desc;
+    document.getElementById('card-key').innerText = result.key;
+    infoCard.classList.remove('hidden');
+}
+
+function animate(timestamp) {
+    if (!state.running) return;
+    
+    state.progress += config.speed;
+    
+    if (state.progress >= 1) {
+        state.progress = 1;
+        draw();
+        onSimulationEnd();
+        return;
+    }
+    
+    draw();
+    requestAnimationFrame(animate);
+}
+
+function draw() {
+    ctx.clearRect(0, 0, width, height);
+    
+    // Draw Map Paths
+    drawPath();
+    
+    // Draw Locations
+    config.targets.forEach((t, i) => drawLocation(t, i));
+    
+    // Draw Tourists & Guide
+    drawTravelers();
+}
+
+function drawPath() {
+    ctx.beginPath();
+    ctx.setLineDash([10, 10]);
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 4;
+    ctx.moveTo(config.targets[0].x, config.targets[0].y);
+    
+    if (state.location === 1) {
+        // Path to International
+        ctx.lineTo(config.targets[2].x, config.targets[2].y);
+    } else {
+        // Path to Other City
+        ctx.lineTo(config.targets[1].x, config.targets[1].y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function drawLocation(target, index) {
+    const isDomesticDest = index === 1;
+    const isInternationalDest = index === 2;
+    const isOrigin = index === 0;
+
+    let color = "#94a3b8";
+    if (isOrigin) color = "#64748b";
+    if (isDomesticDest && state.location === 0) color = "#8b5cf6";
+    if (isInternationalDest && state.location === 1) color = "#f43f5e";
+
+    // Glow effect for destination
+    if ((isDomesticDest && state.location === 0) || (isInternationalDest && state.location === 1)) {
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = color;
+    } else {
+        ctx.shadowBlur = 0;
+    }
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.font = "bold 14px sans-serif";
+    ctx.fillStyle = "#475569";
+    ctx.textAlign = "center";
+    ctx.fillText(target.label, target.x, target.y + 40);
+}
+
+function drawTravelers() {
+    const start = config.targets[0];
+    const dest = state.location === 1 ? config.targets[2] : config.targets[1];
+    
+    // If local, the bus just circles or stays near city
+    let x, y;
+    if (state.location === 0 && state.scope === 0) {
+        // Local: stays around the destination city mostly
+        x = dest.x + Math.cos(state.progress * Math.PI * 2) * 30;
+        y = dest.y + Math.sin(state.progress * Math.PI * 2) * 30;
+    } else {
+        // Moving: start to dest
+        x = start.x + (dest.x - start.x) * state.progress;
+        y = start.y + (dest.y - start.y) * state.progress;
+    }
+
+    // Draw Bus / Plane
+    ctx.save();
+    ctx.translate(x, y);
+    
+    // Draw Guide Icon
+    ctx.fillStyle = "#8b5cf6";
+    ctx.beginPath();
+    ctx.arc(0, -15, 10, 0, Math.PI * 2);
+    ctx.fill();
+    // Head
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(0, -18, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // Flag (Tour guide flag)
+    ctx.strokeStyle = "#facc15";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(5, -15);
+    ctx.lineTo(5, -30);
+    ctx.stroke();
+    ctx.fillStyle = "#facc15";
+    ctx.fillRect(5, -30, 12, 8);
+
+    // Draw Tourists (Simple dots)
+    for(let i=0; i<5; i++) {
+        ctx.fillStyle = "#334155";
+        ctx.beginPath();
+        ctx.arc(-15 + (i*6), 5, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Draw Transport Icon
+    if (state.location === 1) {
+        // Plane
+        ctx.fillStyle = "#cbd5e1";
+        ctx.font = "24px sans-serif";
+        ctx.fillText("✈️", 0, 15);
+    } else {
+        // Bus
+        ctx.fillStyle = "#cbd5e1";
+        ctx.font = "24px sans-serif";
+        ctx.fillText("🚌", 0, 15);
+    }
+
+    ctx.restore();
+}
+
+// Teacher Actions Listener
+window.addEventListener('message', function(event) {
+  const { type, target, state: newState, content } = event.data;
+
+  switch (type) {
+    case 'SET_WIDGET_STATE':
+      if (newState) {
+        Object.entries(newState).forEach(([key, value]) => {
+          updateVar(key, value);
+        });
+      }
+      break;
+    case 'HIGHLIGHT_ELEMENT':
+      const highlightEl = document.querySelector(target) || document.getElementById(target.replace('#',''));
+      if (highlightEl) {
+        highlightEl.style.outline = '3px solid rgba(139, 92, 246, 0.8)';
+        highlightEl.style.outlineOffset = '4px';
+        highlightEl.style.animation = 'pulse-highlight 2s infinite';
+        setTimeout(() => {
+          highlightEl.style.outline = '';
+          highlightEl.style.animation = '';
+        }, 3000);
+      }
+      break;
+  }
+});
+
+// Initial Draw
+draw();
+</script>
+</body>
+</html>
