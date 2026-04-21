@@ -2,106 +2,2157 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>课程01：导游人员及执业许可</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>课程01·导游人员及执业许可</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;overflow-x:hidden}
-.pb{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,#3b82f6,#8b5cf6);z-index:100;transition:width .4s}
-.nav{position:fixed;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:90;flex-wrap:wrap;justify-content:center;max-width:92vw}
-.dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .3s;flex-shrink:0}
-.dot.active{background:#60a5fa;transform:scale(1.4)}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+/* 进度条 */
+#pb{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,#3b82f6,#8b5cf6);z-index:200;transition:width .4s;pointer-events:none}
+/* 顶部导航点 */
+#nav{position:fixed;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:190;flex-wrap:wrap;justify-content:center;max-width:92vw}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .3s;flex-shrink:0}
+.dot.active{background:#60a5fa;transform:scale(1.5)}
 .dot.done{background:rgba(34,197,94,.5)}
-.dot:hover{background:rgba(255,255,255,.5)}
-.scene{display:none;min-height:100vh;padding:20px;padding-top:60px;padding-bottom:90px}
-.scene.active{display:flex;flex-direction:column;align-items:center}
-iframe{border:none;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.4);width:100%;background:#fff}
-.frame-wrap{width:100%;max-width:960px;position:relative}
-.frame-wrap.aspect{aspect-ratio:16/9}
-.frame-wrap.manual{height:clamp(400px,60vh,700px)}
-.badge{position:absolute;top:12px;right:12px;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:600;z-index:2;pointer-events:none}
-.badge-slide{background:rgba(96,165,250,.2);color:#93c5fd}
-.badge-interactive{background:rgba(168,85,247,.2);color:#c4b5fd}
-.badge-quiz{background:rgba(245,158,11,.2);color:#fcd34d}
-.ctrl{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:90}
-.btn{padding:11px 28px;border:none;border-radius:30px;font-size:15px;font-weight:600;cursor:pointer;transition:all .3s;font-family:inherit}
-.btn-prev{background:rgba(255,255,255,.1);color:#e2e8f0;border:1px solid rgba(255,255,255,.15)}
-.btn-prev:hover{background:rgba(255,255,255,.2)}
-.btn-prev:disabled{opacity:.3;cursor:not-allowed}
-.btn-next{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff}
-.btn-next:hover{transform:scale(1.05);box-shadow:0 4px 20px rgba(59,130,246,.4)}
-.btn-next:disabled{opacity:.3;cursor:not-allowed}
-.cover{flex-direction:column;justify-content:center;text-align:center;min-height:100vh}
-.cover h1{font-size:clamp(28px,6vw,52px);font-weight:700;background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px;line-height:1.3}
-.cover p{font-size:clamp(15px,2.5vw,18px);color:#94a3b8;max-width:500px;line-height:1.8;margin-bottom:40px}
-.complete{flex-direction:column;justify-content:center;text-align:center}
-.complete h2{font-size:clamp(26px,5vw,40px);color:#22c55e;margin-bottom:16px}
-.complete p{color:#94a3b8;font-size:18px;line-height:1.8}
-.scene-hdr{text-align:center;margin-bottom:16px}
-.scene-hdr .type-tag{display:inline-block;padding:4px 14px;border-radius:10px;font-size:12px;font-weight:600;margin-bottom:8px}
+/* 场景 */
+.scene{display:none;min-height:100vh;padding:20px;padding-top:52px;padding-bottom:100px;flex-direction:column;align-items:center}
+.scene.active{display:flex}
+.scene-hdr{text-align:center;margin-bottom:18px;width:100%;max-width:960px}
+.type-tag{display:inline-block;padding:3px 12px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:8px}
 .tt-slide{background:rgba(96,165,250,.15);color:#93c5fd}
 .tt-interactive{background:rgba(168,85,247,.15);color:#c4b5fd}
 .tt-quiz{background:rgba(245,158,11,.15);color:#fcd34d}
-.scene-hdr h2{font-size:clamp(16px,3vw,22px);color:#f1f5f9}
-@media(max-width:600px){.frame-wrap.manual{height:350px}}
+.scene-hdr h2{font-size:clamp(16px,3vw,24px);color:#f1f5f9;line-height:1.4}
+.scene-counter{font-size:12px;color:#475569;margin-top:4px;display:block}
+.scene-body{width:100%;max-width:960px;display:flex;flex-direction:column;align-items:center}
+/* 幻灯片 */
+.slide-canvas{max-width:960px;width:100%}
+/* 测验 */
+.quiz-container{padding:0 8px}
+.quiz-progress{color:#60a5fa;font-size:14px;margin-bottom:16px;text-align:center}
+.quiz-card{background:rgba(255,255,255,.05);border-radius:16px;padding:24px;margin-bottom:12px}
+.q-stem{font-size:clamp(15px,2.5vw,18px);line-height:1.7;margin-bottom:20px;color:#f1f5f9}
+.q-opts{display:flex;flex-direction:column;gap:10px}
+.q-opt{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#e2e8f0;padding:12px 18px;border-radius:10px;font-size:15px;cursor:pointer;text-align:left;transition:all .2s;font-family:inherit}
+.q-opt:hover:not([disabled]){background:rgba(59,130,246,.2);border-color:#3b82f6}
+.quiz-fb{padding:14px 18px;border-radius:10px;font-size:15px;margin-bottom:12px;line-height:1.6}
+.quiz-nav{text-align:center;margin-top:8px}
+.quiz-result{text-align:center;padding:32px;background:rgba(255,255,255,.05);border-radius:16px}
+.q-score{font-size:22px;color:#4ade80;margin-bottom:8px}
+.q-pct{font-size:48px;font-weight:700;color:#60a5fa}
+.q-btn{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;border:none;padding:12px 32px;border-radius:24px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.q-btn:hover{transform:scale(1.05)}
+/* 底部控制 */
+#ctrl{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:190}
+.btn{padding:10px 26px;border:none;border-radius:24px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+.btn-prev{background:rgba(255,255,255,.1);color:#e2e8f0;border:1px solid rgba(255,255,255,.12)}
+.btn-prev:hover{background:rgba(255,255,255,.18)}
+.btn-next{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff}
+.btn-next:hover{transform:scale(1.04);box-shadow:0 4px 18px rgba(59,130,246,.4)}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important}
+/* 封面 */
+#s-cover{justify-content:center;text-align:center}
+.cover-h1{font-size:clamp(28px,6vw,52px);font-weight:700;background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px;line-height:1.3;padding:0 16px}
+.cover-sub{color:#94a3b8;font-size:clamp(14px,2.5vw,17px);line-height:1.8;margin-bottom:36px;max-width:480px;padding:0 16px}
+/* 结尾 */
+#s-end{justify-content:center;text-align:center}
+.end-h2{font-size:clamp(24px,5vw,40px);color:#22c55e;margin-bottom:16px}
+.end-p{color:#94a3b8;font-size:17px;line-height:1.8}
 </style>
 </head>
 <body>
-<div class="pb" id="pb"></div>
-<div class="nav" id="nav"></div>
+<div id="pb"></div>
+<div id="nav"></div>
+
+<!-- 封面 -->
 <div class="scene active" id="s-cover">
-<div class="cover">
-<h1>课程01<br>导游人员及执业许可</h1>
-<p>认识导游行业、了解导游分类与执业许可制度<br>共10个学习环节</p>
-<button class="btn btn-next" onclick="go(1)">开始学习 →</button>
+  <h1 class="cover-h1">课程01<br>导游人员及执业许可</h1>
+  <p class="cover-sub">认识导游行业·了解导游分类与执业许可制度<br>共 10 个学习环节</p>
+  <button class="btn btn-next" onclick="go(1)">开始学习 →</button>
+</div>
+
+<div class="scene" id="s-1">
+<div class="scene-hdr">
+  <span class="type-tag tt-slide">幻灯片</span>
+  <h2>开场：导游行业的“暴富”与“凉凉”</h2>
+  <span class="scene-counter">1 / 10</span>
+</div>
+<div class="scene-body"><div class="slide-canvas" style="background:#1e293b;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+<div style="position:absolute;left:0.00%;top:0.00%;width:68.75%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 32px; color: #1a1a1a;&quot;&gt;&lt;strong&gt;导游行业的“暴富”与“凉凉”&lt;/strong&gt;&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:9.38%;background:#e63946;border-radius:8px;"></div>
+<img src="gen_img_5bxuYNOh" style="position:absolute;left:0.00%;top:0.00%;width:34.38%;object-fit:contain;width:34.38%;height:34.31%" onerror="this.style.display='none'">
+<div style="position:absolute;left:0.00%;top:0.00%;width:32.03%;background:#ffffff;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:29.69%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 20px; color: #e63946;&quot;&gt;&lt;strong&gt;案例：网红小李日入3000&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;font-size: 16px; color: #666;&quot;&gt;流量时代下的“暴富”神话与行业真相&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:32.03%;background:#ffffff;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:29.69%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 20px; color: #1d3557;&quot;&gt;&lt;strong&gt;法律红线：导游证是生存基石&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;font-size: 16px; color: #333;&quot;&gt;• 执业前提：取得导游证并挂靠机构&lt;/p&gt;&lt;p style=&quot;font-size: 16px; color: #333;&quot;&gt;• 无证后果：高额罚款及终身行业禁入&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:68.75%;background:#e9ecef;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:65.62%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 18px; text-align: center; color: #495057;&quot;&gt;&lt;strong&gt;[行业避坑指南] 请使用AI查询：无证执业导游业务的具体处罚标准&lt;/strong&gt;&lt;/p&gt;</div>
+
 </div>
 </div>
-<div class="scene" id="s-1"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>开场：导游行业的“暴富”与“凉凉”</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">1/10</span><iframe src="slide_1.html"></iframe></div></div>
-<div class="scene" id="s-2"><div class="scene-hdr"><span class="type-tag tt-interactive">互动体验</span><h2>模拟体验：无证带团的后果</h2></div><div class="frame-wrap manual"><span class="badge badge-interactive">2/10</span><iframe src="interactive_1.html"></iframe></div></div>
-<div class="scene" id="s-3"><div class="scene-hdr"><span class="type-tag tt-quiz">课堂测验</span><h2>基础测试：谁才是真正的导游？</h2></div><div class="frame-wrap manual"><span class="badge badge-quiz">3/10</span><iframe src="quiz_1.html"></iframe></div></div>
-<div class="scene" id="s-4"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>职业分身：地陪、全陪与领队</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">4/10</span><iframe src="slide_2.html"></iframe></div></div>
-<div class="scene" id="s-5"><div class="scene-hdr"><span class="type-tag tt-interactive">互动体验</span><h2>职场选择题：我是哪种导游？</h2></div><div class="frame-wrap manual"><span class="badge badge-interactive">5/10</span><iframe src="interactive_2.html"></iframe></div></div>
-<div class="scene" id="s-6"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>等级制度：从“青铜”到“王者”</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">6/10</span><iframe src="slide_3.html"></iframe></div></div>
-<div class="scene" id="s-7"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>升级攻略：考试与经验的双重考验</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">7/10</span><iframe src="slide_4.html"></iframe></div></div>
-<div class="scene" id="s-8"><div class="scene-hdr"><span class="type-tag tt-quiz">课堂测验</span><h2>晋升挑战赛：你能升到哪一级？</h2></div><div class="frame-wrap manual"><span class="badge badge-quiz">8/10</span><iframe src="quiz_2.html"></iframe></div></div>
-<div class="scene" id="s-9"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>职业雷区：什么情况会直接“Game Over”？</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">9/10</span><iframe src="slide_5.html"></iframe></div></div>
-<div class="scene" id="s-10"><div class="scene-hdr"><span class="type-tag tt-slide">幻灯片</span><h2>通关结算：我的导游职业手册</h2></div><div class="frame-wrap aspect"><span class="badge badge-slide">10/10</span><iframe src="slide_6.html"></iframe></div></div>
-<div class="scene" id="s-end">
-<div class="complete">
-<h2>🎉 恭喜完成本次课程！</h2>
-<p>你已经学习了导游人员及执业许可的全部内容<br>继续加油，下一课见！</p>
-<br>
-<button class="btn btn-next" onclick="location.href='../'">返回课程目录</button>
 </div>
+<div class="scene" id="s-2">
+<div class="scene-hdr">
+  <span class="type-tag tt-interactive">互动体验</span>
+  <h2>模拟体验：无证带团的后果</h2>
+  <span class="scene-counter">2 / 10</span>
 </div>
-<div class="ctrl">
-<button class="btn btn-prev" id="btnPrev" onclick="go(cur-1)">←</button>
-<button class="btn btn-next" id="btnNext" onclick="go(cur+1)">→</button>
+<div class="scene-body"><div class="interactive-wrap" style="width:100%;max-width:960px;margin:0 auto">
+  <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;zh-CN&quot;>
+<head>
+    <meta charset=&quot;UTF-8&quot;>
+    <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;>
+    <title>模拟体验：无证带团的后果</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+
+        body {
+            background-color: #0f172a;
+            color: var(--light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 100%;
+            max-height: 600px;
+            background: #cbd5e1;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* UI Layers */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stats-box {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            pointer-events: auto;
+        }
+
+        .risk-meter {
+            width: 200px;
+            height: 20px;
+            background: #475569;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+            border: 2px solid #1e293b;
+        }
+
+        #risk-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
+            transition: width 0.3s ease;
+        }
+
+        /* Game Screens */
+        .screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        .hidden { display: none !important; }
+
+        h1 { font-size: 2rem; margin-bottom: 1rem; color: var(--warning); }
+        p { margin-bottom: 1.5rem; line-height: 1.6; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            pointer-events: auto;
+        }
+
+        .btn:hover { background: #1d4ed8; transform: scale(1.05); }
+        .btn:active { transform: scale(0.95); }
+
+        canvas {
+            display: block;
+            background: #e2e8f0;
+            cursor: crosshair;
+        }
+
+        /* Game Controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            pointer-events: auto;
+            z-index: 20;
+        }
+
+        .action-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            border: 4px solid white;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        #btn-legal { background: var(--success); }
+        #btn-illegal { background: var(--danger); }
+        .action-btn.active { transform: scale(0.9); box-shadow: inset 0 4px 6px rgba(0,0,0,0.4); border-color: #cbd5e1; }
+
+        /* Achievement Toast */
+        #toast {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--warning);
+            color: var(--dark);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 200;
+        }
+
+        #toast.show { transform: translateX(-50%) translateY(0); }
+
+        .law-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            max-width: 500px;
+            border-left: 4px solid var(--danger);
+        }
+
+        .stat-val { color: var(--warning); font-weight: bold; font-size: 1.2rem; }
+    </style>
+
+<link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css&quot;>
+<script src=&quot;https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js&quot;></script>
+<script src=&quot;https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js&quot;></script>
+<script>
+document.addEventListener(&quot;DOMContentLoaded&quot;, function() {
+    const katexOptions = {
+        delimiters: [
+            {left: '\\[', right: '\\]', display: true},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false,
+        strict: false,
+        trust: true
+    };
+
+    let renderTimeout;
+    function safeRender() {
+        if (renderTimeout) clearTimeout(renderTimeout);
+        renderTimeout = setTimeout(() => {
+            renderMathInElement(document.body, katexOptions);
+        }, 100);
+    }
+
+    renderMathInElement(document.body, katexOptions);
+
+    const observer = new MutationObserver((mutations) => {
+        let shouldRender = false;
+        mutations.forEach((mutation) => {
+            if (mutation.target &amp;&amp;
+                mutation.target.className &amp;&amp;
+                typeof mutation.target.className === 'string' &amp;&amp;
+                mutation.target.className.includes('katex')) {
+                return;
+            }
+            shouldRender = true;
+        });
+
+        if (shouldRender) {
+            safeRender();
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+
+    setInterval(() => {
+        const text = document.body.innerText;
+        if (text.includes('\\(') || text.includes('$$')) {
+            safeRender();
+        }
+    }, 2000);
+});
+</script>
+</head>
+<body>
+
+<div id=&quot;game-container&quot;>
+    <canvas id=&quot;gameCanvas&quot;></canvas>
+
+    <div class=&quot;ui-layer hud&quot;>
+        <div class=&quot;stats-box&quot;>
+            <div>团队满意度: <span id=&quot;stat-sat&quot; class=&quot;stat-val&quot;>100%</span></div>
+            <div>违规风险值</div>
+            <div class=&quot;risk-meter&quot;><div id=&quot;risk-fill&quot;></div></div>
+        </div>
+        <div class=&quot;stats-box&quot; style=&quot;text-align: right; border-left: 0; border-right: 4px solid var(--primary);&quot;>
+            <div>当前收益: <span id=&quot;stat-money&quot; class=&quot;stat-val&quot;>￥0</span></div>
+            <div id=&quot;status-tag&quot; style=&quot;font-size: 12px; color: var(--success);&quot;>● 合规执业中</div>
+        </div>
+    </div>
+
+    <div class=&quot;controls&quot;>
+        <div id=&quot;btn-legal&quot; class=&quot;action-btn active&quot; onmousedown=&quot;setMode('legal')&quot; ontouchstart=&quot;setMode('legal')&quot;>
+            <span>🛡️</span>
+            <span>合规执业</span>
+        </div>
+        <div id=&quot;btn-illegal&quot; class=&quot;action-btn&quot; onmousedown=&quot;setMode('illegal')&quot; ontouchstart=&quot;setMode('illegal')&quot;>
+            <span>🔥</span>
+            <span>无证私带</span>
+        </div>
+    </div>
+
+    <div id=&quot;toast&quot;>🏆 获得成就：守法公民</div>
+
+    <!-- Start Screen -->
+    <div id=&quot;start-screen&quot; class=&quot;screen&quot;>
+        <h1>违规带团模拟体验</h1>
+        <p>
+            你是一名旅游从业者。你的目标是带领“地陪”团队完成景点游览。<br>
+            <b>合规执业</b>：收益稳定，风险为零。<br>
+            <b>无证私带</b>：收益翻倍，但面临旅游执法部门的严厉查处！
+        </p>
+        <div style=&quot;margin-bottom: 20px; text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;&quot;>
+            <li>🖱️ 鼠标/手指拖动 <b>导游小旗</b> 引导游客</li>
+            <li>🚀 切换模式平衡 <b>收益</b> 与 <b>风险</b></li>
+            <li>👮 避开 <b>执法人员</b> 的扫描视线</li>
+        </div>
+        <button class=&quot;btn&quot; onclick=&quot;startGame()&quot;>开始模拟</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id=&quot;over-screen&quot; class=&quot;screen hidden&quot;>
+        <h1 id=&quot;over-title&quot;>被现场查获！</h1>
+        <div id=&quot;over-reason&quot; style=&quot;margin-bottom: 15px; color: var(--danger); font-weight: bold;&quot;></div>
+        <div class=&quot;law-box&quot;>
+            <p id=&quot;law-content&quot; style=&quot;margin: 0; text-align: left;&quot;></p>
+        </div>
+        <div style=&quot;margin: 20px 0;&quot;>
+            <p>最终收益: <span id=&quot;final-money&quot; class=&quot;stat-val&quot;></span></p>
+            <p>违规次数: <span id=&quot;final-violations&quot; class=&quot;stat-val&quot;></span></p>
+        </div>
+        <button class=&quot;btn&quot; onclick=&quot;location.reload()&quot;>重新开始</button>
+    </div>
+</div>
+
+<script type=&quot;application/json&quot; id=&quot;widget-config&quot;>
+{
+  &quot;type&quot;: &quot;game&quot;,
+  &quot;gameType&quot;: &quot;action&quot;,
+  &quot;scoring&quot;: {
+    &quot;correctPoints&quot;: 10,
+    &quot;speedBonus&quot;: 5
+  }
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const riskFill = document.getElementById('risk-fill');
+    const statSat = document.getElementById('stat-sat');
+    const statMoney = document.getElementById('stat-money');
+    const statusTag = document.getElementById('status-tag');
+    const toast = document.getElementById('toast');
+
+    // Game Constants
+    const LAW_TEXTS = {
+        UNLICENSED: &quot;《旅游法》第102条：未取得导游证或者领队证从事导游、领队业务的，由旅游主管部门责令改正，没收违法所得，并处二千元以上二万元以下罚款。&quot;,
+        NO_CONTRACT: &quot;《旅行社条例》：旅行社委派无证人员带团，处二万元以上十万元以下罚款；情节严重的，责令停业整顿或吊销许可证。&quot;
+    };
+
+    // Game State
+    let gameState = 'START';
+    let player = { x: 100, y: 300, targetX: 100, targetY: 300, radius: 15, color: '#2563eb' };
+    let tourists = [];
+    let inspectors = [];
+    let spots = [];
+    let score = 0;
+    let risk = 0;
+    let satisfaction = 100;
+    let mode = 'legal'; // 'legal' or 'illegal'
+    let violations = 0;
+    let money = 0;
+    let lastTime = 0;
+    let achievements = new Set();
+
+    function init() {
+        resize();
+        tourists = [];
+        for(let i=0; i<8; i++) {
+            tourists.push({
+                x: player.x,
+                y: player.y,
+                offX: (Math.random() - 0.5) * 40,
+                offY: (Math.random() - 0.5) * 40,
+                speed: 0.05 + Math.random() * 0.05
+            });
+        }
+
+        // Add scenic spots
+        spots = [
+            { x: 150, y: 150, name: '名胜古迹', visited: false },
+            { x: 650, y: 150, name: '风景名胜', visited: false },
+            { x: 650, y: 450, name: '民俗村', visited: false },
+            { x: 150, y: 450, name: '博物馆', visited: false }
+        ];
+
+        // Add inspectors
+        inspectors = [
+            { x: 400, y: 100, tx: 400, ty: 500, speed: 1.5, angle: 0, range: 120, sweep: 0.8 },
+            { x: 100, y: 300, tx: 700, ty: 300, speed: 2, angle: Math.PI, range: 100, sweep: 1.2 }
+        ];
+    }
+
+    function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+    }
+
+    window.startGame = function() {
+        document.getElementById('start-screen').classList.add('hidden');
+        gameState = 'PLAYING';
+        init();
+        requestAnimationFrame(gameLoop);
+        showToast(&quot;📢 游览开始：请合法执业&quot;);
+    };
+
+    window.setMode = function(newMode) {
+        if (gameState !== 'PLAYING') return;
+        mode = newMode;
+        document.getElementById('btn-legal').classList.toggle('active', mode === 'legal');
+        document.getElementById('btn-illegal').classList.toggle('active', mode === 'illegal');
+        
+        if (mode === 'illegal') {
+            statusTag.innerText = &quot;⚠ 违规私带中 (收益x2)&quot;;
+            statusTag.style.color = &quot;var(--danger)&quot;;
+            player.color = &quot;var(--danger)&quot;;
+            violations++;
+            if (!achievements.has('risk')) {
+                showToast(&quot;⚡ 风险警示：利益伴随代价&quot;);
+                achievements.add('risk');
+            }
+        } else {
+            statusTag.innerText = &quot;● 合规执业中&quot;;
+            statusTag.style.color = &quot;var(--success)&quot;;
+            player.color = &quot;var(--primary)&quot;;
+        }
+    }
+
+    function showToast(text) {
+        toast.innerText = text;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Input Handling
+    const handleMove = (e) => {
+        if (gameState !== 'PLAYING') return;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        player.targetX = clientX - rect.left;
+        player.targetY = clientY - rect.top;
+    };
+
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('touchmove', handleMove);
+
+    function gameLoop(timestamp) {
+        if (gameState !== 'PLAYING') return;
+        
+        const deltaTime = timestamp - lastTime;
+        lastTime = timestamp;
+
+        update();
+        draw();
+        
+        requestAnimationFrame(gameLoop);
+    }
+
+    function update() {
+        // Move Player
+        player.x += (player.targetX - player.x) * 0.1;
+        player.y += (player.targetY - player.y) * 0.1;
+
+        // Move Tourists (trailing effect)
+        tourists.forEach((t, i) => {
+            const targetX = player.x + t.offX;
+            const targetY = player.y + t.offY;
+            t.x += (targetX - t.x) * t.speed;
+            t.y += (targetY - t.y) * t.speed;
+        });
+
+        // Update Inspectors
+        inspectors.forEach(ins => {
+            // Patrol movement
+            const dist = Math.hypot(ins.tx - ins.x, ins.ty - ins.y);
+            if (dist < 5) {
+                const tempX = ins.x; const tempY = ins.y;
+                ins.tx = ins.startX || 400; ins.ty = ins.startY || 100;
+                ins.startX = tempX; ins.startY = tempY;
+            }
+            const angleToTarget = Math.atan2(ins.ty - ins.y, ins.tx - ins.x);
+            ins.x += Math.cos(angleToTarget) * ins.speed;
+            ins.y += Math.sin(angleToTarget) * ins.speed;
+            ins.angle = angleToTarget;
+
+            // Detection logic
+            if (mode === 'illegal') {
+                const dx = player.x - ins.x;
+                const dy = player.y - ins.y;
+                const distToPlayer = Math.hypot(dx, dy);
+                const angleToPlayer = Math.atan2(dy, dx);
+                
+                // Check if in cone
+                let angleDiff = Math.abs(angleToPlayer - ins.angle);
+                while(angleDiff > Math.PI) angleDiff = Math.abs(angleDiff - 2*Math.PI);
+
+                if (distToPlayer < ins.range &amp;&amp; angleDiff < ins.sweep) {
+                    gameOver(&quot;在未持证状态下被执法人员当场拦截！&quot;, &quot;UNLICENSED&quot;);
+                }
+            }
+        });
+
+        // Mode consequences
+        if (mode === 'illegal') {
+            risk = Math.min(100, risk + 0.15);
+            money += 2;
+        } else {
+            risk = Math.max(0, risk - 0.05);
+            money += 0.5;
+        }
+        
+        riskFill.style.width = risk + '%';
+        statMoney.innerText = `￥${Math.floor(money)}`;
+
+        // Risk threshold penalty
+        if (risk >= 100) {
+            gameOver(&quot;违规行为被大数据监控平台预警，执法部门立案调查！&quot;, &quot;NO_CONTRACT&quot;);
+        }
+
+        // Scenic spots
+        spots.forEach(s => {
+            const d = Math.hypot(player.x - s.x, player.y - s.y);
+            if (d < 40 &amp;&amp; !s.visited) {
+                s.visited = true;
+                money += 500;
+                showToast(`✅ 到达景点：${s.name}`);
+                if (spots.every(spot => spot.visited)) {
+                    // Reset spots for endless gameplay or end? Let's refresh them
+                    setTimeout(() => spots.forEach(sp => sp.visited = false), 2000);
+                }
+            }
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Map Grid
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        for(let i=0; i<canvas.width; i+=50) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+        }
+        for(let i=0; i<canvas.height; i+=50) {
+            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+        }
+
+        // Draw Spots
+        spots.forEach(s => {
+            ctx.fillStyle = s.visited ? '#94a3b8' : '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, 30, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(s.name, s.x, s.y + 5);
+        });
+
+        // Draw Inspectors Vision
+        inspectors.forEach(ins => {
+            const gradient = ctx.createRadialGradient(ins.x, ins.y, 0, ins.x, ins.y, ins.range);
+            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+            gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(ins.x, ins.y);
+            ctx.arc(ins.x, ins.y, ins.range, ins.angle - ins.sweep, ins.angle + ins.sweep);
+            ctx.closePath();
+            ctx.fill();
+
+            // Inspector Icon
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(ins.x, ins.y, 12, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = '10px sans-serif';
+            ctx.fillText(&quot;执&quot;, ins.x, ins.y + 4);
+        });
+
+        // Draw Tourists
+        ctx.fillStyle = '#64748b';
+        tourists.forEach(t => {
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 8, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        // Draw Player (Guide)
+        ctx.fillStyle = player.color;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Guide Flag
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y - 30, 20, 15);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(player.x, player.y - 30); ctx.stroke();
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(mode === 'legal' ? &quot;正&quot; : &quot;无&quot;, player.x + 10, player.y - 19);
+    }
+
+    function gameOver(reason, lawKey) {
+        gameState = 'OVER';
+        document.getElementById('over-screen').classList.remove('hidden');
+        document.getElementById('over-reason').innerText = reason;
+        document.getElementById('law-content').innerText = LAW_TEXTS[lawKey];
+        document.getElementById('final-money').innerText = `￥${Math.floor(money)}`;
+        document.getElementById('final-violations').innerText = violations + &quot; 次&quot;;
+        
+        // Save score
+        const highscore = localStorage.getItem('tour_game_highscore') || 0;
+        if (money > highscore) {
+            localStorage.setItem('tour_game_highscore', money);
+        }
+    }
+});
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang=&quot;zh-CN&quot;>
+<head>
+    <meta charset=&quot;UTF-8&quot;>
+    <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;>
+    <title>模拟体验：无证带团的后果</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+
+        body {
+            background-color: #0f172a;
+            color: var(--light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 100%;
+            max-height: 600px;
+            background: #cbd5e1;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* UI Layers */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stats-box {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            pointer-events: auto;
+        }
+
+        .risk-meter {
+            width: 200px;
+            height: 20px;
+            background: #475569;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+            border: 2px solid #1e293b;
+        }
+
+        #risk-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
+            transition: width 0.3s ease;
+        }
+
+        /* Game Screens */
+        .screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        .hidden { display: none !important; }
+
+        h1 { font-size: 2rem; margin-bottom: 1rem; color: var(--warning); }
+        p { margin-bottom: 1.5rem; line-height: 1.6; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            pointer-events: auto;
+        }
+
+        .btn:hover { background: #1d4ed8; transform: scale(1.05); }
+        .btn:active { transform: scale(0.95); }
+
+        canvas {
+            display: block;
+            background: #e2e8f0;
+            cursor: crosshair;
+        }
+
+        /* Game Controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            pointer-events: auto;
+            z-index: 20;
+        }
+
+        .action-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            border: 4px solid white;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        #btn-legal { background: var(--success); }
+        #btn-illegal { background: var(--danger); }
+        .action-btn.active { transform: scale(0.9); box-shadow: inset 0 4px 6px rgba(0,0,0,0.4); border-color: #cbd5e1; }
+
+        /* Achievement Toast */
+        #toast {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--warning);
+            color: var(--dark);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 200;
+        }
+
+        #toast.show { transform: translateX(-50%) translateY(0); }
+
+        .law-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            max-width: 500px;
+            border-left: 4px solid var(--danger);
+        }
+
+        .stat-val { color: var(--warning); font-weight: bold; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+<div id=&quot;game-container&quot;>
+    <canvas id=&quot;gameCanvas&quot;></canvas>
+
+    <div class=&quot;ui-layer hud&quot;>
+        <div class=&quot;stats-box&quot;>
+            <div>团队满意度: <span id=&quot;stat-sat&quot; class=&quot;stat-val&quot;>100%</span></div>
+            <div>违规风险值</div>
+            <div class=&quot;risk-meter&quot;><div id=&quot;risk-fill&quot;></div></div>
+        </div>
+        <div class=&quot;stats-box&quot; style=&quot;text-align: right; border-left: 0; border-right: 4px solid var(--primary);&quot;>
+            <div>当前收益: <span id=&quot;stat-money&quot; class=&quot;stat-val&quot;>￥0</span></div>
+            <div id=&quot;status-tag&quot; style=&quot;font-size: 12px; color: var(--success);&quot;>● 合规执业中</div>
+        </div>
+    </div>
+
+    <div class=&quot;controls&quot;>
+        <div id=&quot;btn-legal&quot; class=&quot;action-btn active&quot; onmousedown=&quot;setMode('legal')&quot; ontouchstart=&quot;setMode('legal')&quot;>
+            <span>🛡️</span>
+            <span>合规执业</span>
+        </div>
+        <div id=&quot;btn-illegal&quot; class=&quot;action-btn&quot; onmousedown=&quot;setMode('illegal')&quot; ontouchstart=&quot;setMode('illegal')&quot;>
+            <span>🔥</span>
+            <span>无证私带</span>
+        </div>
+    </div>
+
+    <div id=&quot;toast&quot;>🏆 获得成就：守法公民</div>
+
+    <!-- Start Screen -->
+    <div id=&quot;start-screen&quot; class=&quot;screen&quot;>
+        <h1>违规带团模拟体验</h1>
+        <p>
+            你是一名旅游从业者。你的目标是带领“地陪”团队完成景点游览。<br>
+            <b>合规执业</b>：收益稳定，风险为零。<br>
+            <b>无证私带</b>：收益翻倍，但面临旅游执法部门的严厉查处！
+        </p>
+        <div style=&quot;margin-bottom: 20px; text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;&quot;>
+            <li>🖱️ 鼠标/手指拖动 <b>导游小旗</b> 引导游客</li>
+            <li>🚀 切换模式平衡 <b>收益</b> 与 <b>风险</b></li>
+            <li>👮 避开 <b>执法人员</b> 的扫描视线</li>
+        </div>
+        <button class=&quot;btn&quot; onclick=&quot;startGame()&quot;>开始模拟</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id=&quot;over-screen&quot; class=&quot;screen hidden&quot;>
+        <h1 id=&quot;over-title&quot;>被现场查获！</h1>
+        <div id=&quot;over-reason&quot; style=&quot;margin-bottom: 15px; color: var(--danger); font-weight: bold;&quot;></div>
+        <div class=&quot;law-box&quot;>
+            <p id=&quot;law-content&quot; style=&quot;margin: 0; text-align: left;&quot;></p>
+        </div>
+        <div style=&quot;margin: 20px 0;&quot;>
+            <p>最终收益: <span id=&quot;final-money&quot; class=&quot;stat-val&quot;></span></p>
+            <p>违规次数: <span id=&quot;final-violations&quot; class=&quot;stat-val&quot;></span></p>
+        </div>
+        <button class=&quot;btn&quot; onclick=&quot;location.reload()&quot;>重新开始</button>
+    </div>
+</div>
+
+<script type=&quot;application/json&quot; id=&quot;widget-config&quot;>
+{
+  &quot;type&quot;: &quot;game&quot;,
+  &quot;gameType&quot;: &quot;action&quot;,
+  &quot;scoring&quot;: {
+    &quot;correctPoints&quot;: 10,
+    &quot;speedBonus&quot;: 5
+  }
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const riskFill = document.getElementById('risk-fill');
+    const statSat = document.getElementById('stat-sat');
+    const statMoney = document.getElementById('stat-money');
+    const statusTag = document.getElementById('status-tag');
+    const toast = document.getElementById('toast');
+
+    // Game Constants
+    const LAW_TEXTS = {
+        UNLICENSED: &quot;《旅游法》第102条：未取得导游证或者领队证从事导游、领队业务的，由旅游主管部门责令改正，没收违法所得，并处二千元以上二万元以下罚款。&quot;,
+        NO_CONTRACT: &quot;《旅行社条例》：旅行社委派无证人员带团，处二万元以上十万元以下罚款；情节严重的，责令停业整顿或吊销许可证。&quot;
+    };
+
+    // Game State
+    let gameState = 'START';
+    let player = { x: 100, y: 300, targetX: 100, targetY: 300, radius: 15, color: '#2563eb' };
+    let tourists = [];
+    let inspectors = [];
+    let spots = [];
+    let score = 0;
+    let risk = 0;
+    let satisfaction = 100;
+    let mode = 'legal'; // 'legal' or 'illegal'
+    let violations = 0;
+    let money = 0;
+    let lastTime = 0;
+    let achievements = new Set();
+
+    function init() {
+        resize();
+        tourists = [];
+        for(let i=0; i<8; i++) {
+            tourists.push({
+                x: player.x,
+                y: player.y,
+                offX: (Math.random() - 0.5) * 40,
+                offY: (Math.random() - 0.5) * 40,
+                speed: 0.05 + Math.random() * 0.05
+            });
+        }
+
+        // Add scenic spots
+        spots = [
+            { x: 150, y: 150, name: '名胜古迹', visited: false },
+            { x: 650, y: 150, name: '风景名胜', visited: false },
+            { x: 650, y: 450, name: '民俗村', visited: false },
+            { x: 150, y: 450, name: '博物馆', visited: false }
+        ];
+
+        // Add inspectors
+        inspectors = [
+            { x: 400, y: 100, tx: 400, ty: 500, speed: 1.5, angle: 0, range: 120, sweep: 0.8 },
+            { x: 100, y: 300, tx: 700, ty: 300, speed: 2, angle: Math.PI, range: 100, sweep: 1.2 }
+        ];
+    }
+
+    function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+    }
+
+    window.startGame = function() {
+        document.getElementById('start-screen').classList.add('hidden');
+        gameState = 'PLAYING';
+        init();
+        requestAnimationFrame(gameLoop);
+        showToast(&quot;📢 游览开始：请合法执业&quot;);
+    };
+
+    window.setMode = function(newMode) {
+        if (gameState !== 'PLAYING') return;
+        mode = newMode;
+        document.getElementById('btn-legal').classList.toggle('active', mode === 'legal');
+        document.getElementById('btn-illegal').classList.toggle('active', mode === 'illegal');
+        
+        if (mode === 'illegal') {
+            statusTag.innerText = &quot;⚠ 违规私带中 (收益x2)&quot;;
+            statusTag.style.color = &quot;var(--danger)&quot;;
+            player.color = &quot;var(--danger)&quot;;
+            violations++;
+            if (!achievements.has('risk')) {
+                showToast(&quot;⚡ 风险警示：利益伴随代价&quot;);
+                achievements.add('risk');
+            }
+        } else {
+            statusTag.innerText = &quot;● 合规执业中&quot;;
+            statusTag.style.color = &quot;var(--success)&quot;;
+            player.color = &quot;var(--primary)&quot;;
+        }
+    }
+
+    function showToast(text) {
+        toast.innerText = text;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Input Handling
+    const handleMove = (e) => {
+        if (gameState !== 'PLAYING') return;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        player.targetX = clientX - rect.left;
+        player.targetY = clientY - rect.top;
+    };
+
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('touchmove', handleMove);
+
+    function gameLoop(timestamp) {
+        if (gameState !== 'PLAYING') return;
+        
+        const deltaTime = timestamp - lastTime;
+        lastTime = timestamp;
+
+        update();
+        draw();
+        
+        requestAnimationFrame(gameLoop);
+    }
+
+    function update() {
+        // Move Player
+        player.x += (player.targetX - player.x) * 0.1;
+        player.y += (player.targetY - player.y) * 0.1;
+
+        // Move Tourists (trailing effect)
+        tourists.forEach((t, i) => {
+            const targetX = player.x + t.offX;
+            const targetY = player.y + t.offY;
+            t.x += (targetX - t.x) * t.speed;
+            t.y += (targetY - t.y) * t.speed;
+        });
+
+        // Update Inspectors
+        inspectors.forEach(ins => {
+            // Patrol movement
+            const dist = Math.hypot(ins.tx - ins.x, ins.ty - ins.y);
+            if (dist < 5) {
+                const tempX = ins.x; const tempY = ins.y;
+                ins.tx = ins.startX || 400; ins.ty = ins.startY || 100;
+                ins.startX = tempX; ins.startY = tempY;
+            }
+            const angleToTarget = Math.atan2(ins.ty - ins.y, ins.tx - ins.x);
+            ins.x += Math.cos(angleToTarget) * ins.speed;
+            ins.y += Math.sin(angleToTarget) * ins.speed;
+            ins.angle = angleToTarget;
+
+            // Detection logic
+            if (mode === 'illegal') {
+                const dx = player.x - ins.x;
+                const dy = player.y - ins.y;
+                const distToPlayer = Math.hypot(dx, dy);
+                const angleToPlayer = Math.atan2(dy, dx);
+                
+                // Check if in cone
+                let angleDiff = Math.abs(angleToPlayer - ins.angle);
+                while(angleDiff > Math.PI) angleDiff = Math.abs(angleDiff - 2*Math.PI);
+
+                if (distToPlayer < ins.range &amp;&amp; angleDiff < ins.sweep) {
+                    gameOver(&quot;在未持证状态下被执法人员当场拦截！&quot;, &quot;UNLICENSED&quot;);
+                }
+            }
+        });
+
+        // Mode consequences
+        if (mode === 'illegal') {
+            risk = Math.min(100, risk + 0.15);
+            money += 2;
+        } else {
+            risk = Math.max(0, risk - 0.05);
+            money += 0.5;
+        }
+        
+        riskFill.style.width = risk + '%';
+        statMoney.innerText = `￥${Math.floor(money)}`;
+
+        // Risk threshold penalty
+        if (risk >= 100) {
+            gameOver(&quot;违规行为被大数据监控平台预警，执法部门立案调查！&quot;, &quot;NO_CONTRACT&quot;);
+        }
+
+        // Scenic spots
+        spots.forEach(s => {
+            const d = Math.hypot(player.x - s.x, player.y - s.y);
+            if (d < 40 &amp;&amp; !s.visited) {
+                s.visited = true;
+                money += 500;
+                showToast(`✅ 到达景点：${s.name}`);
+                if (spots.every(spot => spot.visited)) {
+                    // Reset spots for endless gameplay or end? Let's refresh them
+                    setTimeout(() => spots.forEach(sp => sp.visited = false), 2000);
+                }
+            }
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Map Grid
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        for(let i=0; i<canvas.width; i+=50) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+        }
+        for(let i=0; i<canvas.height; i+=50) {
+            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+        }
+
+        // Draw Spots
+        spots.forEach(s => {
+            ctx.fillStyle = s.visited ? '#94a3b8' : '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, 30, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(s.name, s.x, s.y + 5);
+        });
+
+        // Draw Inspectors Vision
+        inspectors.forEach(ins => {
+            const gradient = ctx.createRadialGradient(ins.x, ins.y, 0, ins.x, ins.y, ins.range);
+            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+            gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(ins.x, ins.y);
+            ctx.arc(ins.x, ins.y, ins.range, ins.angle - ins.sweep, ins.angle + ins.sweep);
+            ctx.closePath();
+            ctx.fill();
+
+            // Inspector Icon
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(ins.x, ins.y, 12, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = '10px sans-serif';
+            ctx.fillText(&quot;执&quot;, ins.x, ins.y + 4);
+        });
+
+        // Draw Tourists
+        ctx.fillStyle = '#64748b';
+        tourists.forEach(t => {
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 8, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        // Draw Player (Guide)
+        ctx.fillStyle = player.color;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Guide Flag
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y - 30, 20, 15);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(player.x, player.y - 30); ctx.stroke();
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(mode === 'legal' ? &quot;正&quot; : &quot;无&quot;, player.x + 10, player.y - 19);
+    }
+
+    function gameOver(reason, lawKey) {
+        gameState = 'OVER';
+        document.getElementById('over-screen').classList.remove('hidden');
+        document.getElementById('over-reason').innerText = reason;
+        document.getElementById('law-content').innerText = LAW_TEXTS[lawKey];
+        document.getElementById('final-money').innerText = `￥${Math.floor(money)}`;
+        document.getElementById('final-violations').innerText = violations + &quot; 次&quot;;
+        
+        // Save score
+        const highscore = localStorage.getItem('tour_game_highscore') || 0;
+        if (money > highscore) {
+            localStorage.setItem('tour_game_highscore', money);
+        }
+    }
+});
+</script>
+</body>
+</html>" style="width:100%;height:clamp(500px,65vh,720px);border:none;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.4);background:#fff" allowfullscreen></iframe>
+</div></div>
+</div>
+<div class="scene" id="s-3">
+<div class="scene-hdr">
+  <span class="type-tag tt-quiz">课堂测验</span>
+  <h2>基础测试：谁才是真正的导游？</h2>
+  <span class="scene-counter">3 / 10</span>
+</div>
+<div class="scene-body"><div class="quiz-container" id="quiz-2" style="width:100%;max-width:720px;margin:0 auto">
+<div class="quiz-progress" id="qp-2">第1题 / 共2题</div>
+<div class="quiz-card" id="qcard-2"></div>
+<div class="quiz-fb" id="qfb-2" style="display:none"></div>
+<div class="quiz-nav" id="qnav-2"></div>
+<div class="quiz-result" id="qresult-2" style="display:none"></div>
 </div>
 <script>
-var scenes = [{"type": "slide", "title": "开场：导游行业的“暴富”与“凉凉”", "src": "slide_1.html"}, {"type": "interactive", "title": "模拟体验：无证带团的后果", "src": "interactive_1.html"}, {"type": "quiz", "title": "基础测试：谁才是真正的导游？", "src": "quiz_1.html"}, {"type": "slide", "title": "职业分身：地陪、全陪与领队", "src": "slide_2.html"}, {"type": "interactive", "title": "职场选择题：我是哪种导游？", "src": "interactive_2.html"}, {"type": "slide", "title": "等级制度：从“青铜”到“王者”", "src": "slide_3.html"}, {"type": "slide", "title": "升级攻略：考试与经验的双重考验", "src": "slide_4.html"}, {"type": "quiz", "title": "晋升挑战赛：你能升到哪一级？", "src": "quiz_2.html"}, {"type": "slide", "title": "职业雷区：什么情况会直接“Game Over”？", "src": "slide_5.html"}, {"type": "slide", "title": "通关结算：我的导游职业手册", "src": "slide_6.html"}];
-var cur = 0;
+(function(){
+  var questions = [{"id": "q1", "type": "single", "question": "根据《导游人员管理条例》，在境内从事导游执业活动必须取得的法定证件是：", "options": [{"value": "A", "label": "导游人员资格证"}, {"value": "B", "label": "导游证"}, {"value": "C", "label": "旅行社经理资格证"}, {"value": "D", "label": "领队证"}], "answer": ["B"], "analysis": "导游证是准予从事导游活动的法定证件。导游人员资格证仅代表通过了考试，具备申请导游证的条件，但未申领导游证前不得执业。经理资格证和领队证分别对应不同的管理岗位和业务范围。", "points": 10, "hasAnswer": true}, {"id": "q2", "type": "multiple", "question": "下列关于导游人员执业条件的表述中，正确的有（多选）：", "options": [{"value": "A", "label": "必须持有导游证"}, {"value": "B", "label": "必须接受旅行社的委派"}, {"value": "C", "label": "可以自行通过社交软件承揽导游业务"}, {"value": "D", "label": "应当在执业过程中佩戴导游证"}], "answer": ["A", "B", "D"], "analysis": "根据规定，导游执业必须满足三要素：一是持有法定导游证；二是受旅行社委派或行业组织委派；三是执业时佩戴证件。导游不得私自承揽业务，因此选项C错误。", "points": 15, "hasAnswer": true}];
+  var cur = 0, total = questions.length, score = 0;
+  var answered = false;
+  
+  function renderQ(){
+    answered = false;
+    var q = questions[cur];
+    var html = '<div class="q-stem">' + (cur+1) + '. ' + (q.question||q.stem||'') + '</div>';
+    html += '<div class="q-opts">';
+    var opts = q.options || [];
+    opts.forEach(function(opt){
+      var v = opt.value || opt.label || opt;
+      var lbl = opt.label || opt;
+      html += '<button class="q-opt" onclick="pickOpt_2(this,\'' + v.replace(/'/g,"\\'") + '\')">' + v + '. ' + lbl + '</button>';
+    });
+    html += '</div>';
+    document.getElementById('qcard-2').innerHTML = html;
+    document.getElementById('qfb-2').style.display = 'none';
+    document.getElementById('qp-2').innerText = '第'+(cur+1)+'题 / 共'+total+'题';
+    document.getElementById('qnav-2').innerHTML = '';
+  }
+  
+  window.pickOpt_2 = function(btn, val){
+    if(answered) return;
+    answered = true;
+    var q = questions[cur];
+    var correct = q.answer || q.correctAnswer || '';
+    var isRight = val === correct || val.charAt(0) === correct;
+    if(isRight) score++;
+    
+    document.querySelectorAll('#quiz-2 .q-opt').forEach(function(b){
+      b.disabled = true;
+      var bv = b.innerText.charAt(0);
+      if(bv === correct || b.innerText.startsWith(correct+'.')){
+        b.style.background = '#22c55e';
+        b.style.color = '#fff';
+      }
+    });
+    if(!isRight) btn.style.background = '#ef4444', btn.style.color = '#fff';
+    
+    var fb = document.getElementById('qfb-2');
+    fb.style.display = 'block';
+    fb.style.background = isRight ? 'rgba(34,197,94,.15)' : 'rgba(239,68,68,.15)';
+    fb.style.color = isRight ? '#4ade80' : '#f87171';
+    fb.innerHTML = (isRight ? '✓ 回答正确！' : '✗ 回答错误，正确答案：' + correct) + (q.analysis ? '<br><span style="color:#94a3b8;font-size:14px">' + q.analysis + '</span>' : '');
+    
+    var navbtn = '<button class="q-btn" onclick="nextQ_2()">' + (cur < total-1 ? '下一题 →' : '查看结果') + '</button>';
+    document.getElementById('qnav-2').innerHTML = navbtn;
+  };
+  
+  window.nextQ_2 = function(){
+    cur++;
+    if(cur >= total){
+      document.getElementById('qcard-2').style.display = 'none';
+      document.getElementById('qfb-2').style.display = 'none';
+      document.getElementById('qnav-2').innerHTML = '';
+      document.getElementById('qp-2').innerText = '完成！';
+      var pct = Math.round(score/total*100);
+      var r = document.getElementById('qresult-2');
+      r.style.display = 'block';
+      r.innerHTML = '<div class="q-score">🎉 得分：' + score + ' / ' + total + '</div><div class="q-pct">' + pct + '分</div><div style="color:#94a3b8;margin-top:12px">' + (pct>=80?'优秀！继续保持。':pct>=60?'良好！再接再厉。':'需要加强，多复习一下。') + '</div>';
+    } else {
+      renderQ();
+    }
+  };
+  
+  renderQ();
+})();
+</script></div>
+</div>
+<div class="scene" id="s-4">
+<div class="scene-hdr">
+  <span class="type-tag tt-slide">幻灯片</span>
+  <h2>职业分身：地陪、全陪与领队</h2>
+  <span class="scene-counter">4 / 10</span>
+</div>
+<div class="scene-body"><div class="slide-canvas" style="background:#1e293b;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+<div style="position:absolute;left:0.00%;top:0.00%;width:68.75%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 32px;&quot;&gt;&lt;strong&gt;职业分身：导游分类与职责图鉴&lt;/strong&gt;&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:25.00%;background:#3B82F6;border-radius:8px;"></div>
+<img src="gen_img_uH6j1ZoS" style="position:absolute;left:0.00%;top:0.00%;width:26.56%;object-fit:contain;width:26.56%;height:26.53%" onerror="this.style.display='none'">
+<div style="position:absolute;left:0.00%;top:0.00%;width:26.56%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 16px; text-align: center; color: #64748B;&quot;&gt;导游职业“分身”形象示意&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:39.06%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 14px; color: #94A3B8;&quot;&gt;* 注：不同角色需持相应导游证件上岗执行任务&lt;/p&gt;</div>
+
+</div>
+</div>
+</div>
+<div class="scene" id="s-5">
+<div class="scene-hdr">
+  <span class="type-tag tt-interactive">互动体验</span>
+  <h2>职场选择题：我是哪种导游？</h2>
+  <span class="scene-counter">5 / 10</span>
+</div>
+<div class="scene-body"><div class="interactive-wrap" style="width:100%;max-width:960px;margin:0 auto">
+  <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;zh-CN&quot;>
+<head>
+    <meta charset=&quot;UTF-8&quot;>
+    <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;>
+    <title>导游分类识别模拟器</title>
+    <script src=&quot;https://cdn.tailwindcss.com&quot;></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+        }
+        body {
+            touch-action: manipulation;
+            font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;
+            overflow: hidden;
+            background-color: #f8fafc;
+        }
+        .control-panel {
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1);
+            z-index: 50;
+        }
+        canvas {
+            touch-action: none;
+            background: linear-gradient(to bottom, #e0f2fe, #f0f9ff);
+        }
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .slider-thumb::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        @keyframes pulse-highlight { 
+            0%, 100% { outline-color: rgba(139, 92, 246, 0.8); } 
+            50% { outline-color: rgba(139, 92, 246, 0.4); } 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .result-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+
+<link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css&quot;>
+<script src=&quot;https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js&quot;></script>
+<script src=&quot;https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js&quot;></script>
+<script>
+document.addEventListener(&quot;DOMContentLoaded&quot;, function() {
+    const katexOptions = {
+        delimiters: [
+            {left: '\\[', right: '\\]', display: true},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false,
+        strict: false,
+        trust: true
+    };
+
+    let renderTimeout;
+    function safeRender() {
+        if (renderTimeout) clearTimeout(renderTimeout);
+        renderTimeout = setTimeout(() => {
+            renderMathInElement(document.body, katexOptions);
+        }, 100);
+    }
+
+    renderMathInElement(document.body, katexOptions);
+
+    const observer = new MutationObserver((mutations) => {
+        let shouldRender = false;
+        mutations.forEach((mutation) => {
+            if (mutation.target &amp;&amp;
+                mutation.target.className &amp;&amp;
+                typeof mutation.target.className === 'string' &amp;&amp;
+                mutation.target.className.includes('katex')) {
+                return;
+            }
+            shouldRender = true;
+        });
+
+        if (shouldRender) {
+            safeRender();
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+
+    setInterval(() => {
+        const text = document.body.innerText;
+        if (text.includes('\\(') || text.includes('$$')) {
+            safeRender();
+        }
+    }, 2000);
+});
+</script>
+</head>
+<body class=&quot;flex flex-col h-screen md:flex-row&quot;>
+
+    <!-- Widget Config -->
+    <script type=&quot;application/json&quot; id=&quot;widget-config&quot;>
+    {
+      &quot;type&quot;: &quot;simulation&quot;,
+      &quot;concept&quot;: &quot;tour_guide_classification&quot;,
+      &quot;description&quot;: &quot;通过行程范围和地点识别导游角色：地陪、全陪、领队&quot;,
+      &quot;variables&quot;: [
+        { &quot;name&quot;: &quot;location&quot;, &quot;label&quot;: &quot;带团地点&quot;, &quot;min&quot;: 0, &quot;max&quot;: 1, &quot;default&quot;: 0, &quot;unit&quot;: &quot;（0境内/1境外）&quot; },
+        { &quot;name&quot;: &quot;scope&quot;, &quot;label&quot;: &quot;服务范围&quot;, &quot;min&quot;: 0, &quot;max&quot;: 1, &quot;default&quot;: 0, &quot;unit&quot;: &quot;（0本地/1跨省）&quot; }
+      ],
+      &quot;presets&quot;: [
+        { &quot;name&quot;: &quot;一日游接待&quot;, &quot;variables&quot;: { &quot;location&quot;: 0, &quot;scope&quot;: 0 } },
+        { &quot;name&quot;: &quot;跨省旅行团&quot;, &quot;variables&quot;: { &quot;location&quot;: 0, &quot;scope&quot;: 1 } },
+        { &quot;name&quot;: &quot;出境考察团&quot;, &quot;variables&quot;: { &quot;location&quot;: 1, &quot;scope&quot;: 1 } }
+      ]
+    }
+    </script>
+
+    <!-- Sidebar / Controls -->
+    <div id=&quot;controls&quot; class=&quot;w-full md:w-80 bg-white p-6 overflow-y-auto flex-shrink-0 border-b md:border-b-0 md:border-r border-gray-200&quot;>
+        <h1 class=&quot;text-xl font-bold text-gray-800 mb-2&quot;>导游分类识别</h1>
+        <p class=&quot;text-sm text-gray-500 mb-6&quot;>设置带团参数，观察职业路径变化</p>
+
+        <div class=&quot;space-y-6&quot;>
+            <!-- Location Switch -->
+            <div>
+                <label class=&quot;block text-sm font-semibold text-gray-700 mb-2&quot;>带团地点 (境内 vs 境外)</label>
+                <div class=&quot;flex items-center justify-between bg-gray-100 p-1 rounded-lg&quot;>
+                    <button id=&quot;loc-0&quot; onclick=&quot;updateVar('location', 0)&quot; class=&quot;flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm&quot;>境内</button>
+                    <button id=&quot;loc-1&quot; onclick=&quot;updateVar('location', 1)&quot; class=&quot;flex-1 py-2 text-sm rounded-md transition-all text-gray-500&quot;>境外</button>
+                </div>
+                <input type=&quot;hidden&quot; id=&quot;location-slider&quot; data-var=&quot;location&quot; value=&quot;0&quot;>
+            </div>
+
+            <!-- Scope Switch -->
+            <div id=&quot;scope-container&quot;>
+                <label class=&quot;block text-sm font-semibold text-gray-700 mb-2&quot;>服务范围 (本地 vs 跨省)</label>
+                <div class=&quot;flex items-center justify-between bg-gray-100 p-1 rounded-lg&quot;>
+                    <button id=&quot;scope-0&quot; onclick=&quot;updateVar('scope', 0)&quot; class=&quot;flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm&quot;>本地接待</button>
+                    <button id=&quot;scope-1&quot; onclick=&quot;updateVar('scope', 1)&quot; class=&quot;flex-1 py-2 text-sm rounded-md transition-all text-gray-500&quot;>全程跨省</button>
+                </div>
+                <input type=&quot;hidden&quot; id=&quot;scope-slider&quot; data-var=&quot;scope&quot; value=&quot;0&quot;>
+            </div>
+
+            <!-- Presets -->
+            <div class=&quot;pt-4&quot;>
+                <label class=&quot;block text-sm font-semibold text-gray-700 mb-2&quot;>快速预设</label>
+                <div class=&quot;grid grid-cols-1 gap-2&quot;>
+                    <button onclick=&quot;applyPreset(0, 0)&quot; class=&quot;text-xs py-2 px-3 bg-indigo-50 text-indigo-700 rounded border border-indigo-100 hover:bg-indigo-100 transition-colors&quot;>地接社任务 (地陪)</button>
+                    <button onclick=&quot;applyPreset(0, 1)&quot; class=&quot;text-xs py-2 px-3 bg-indigo-50 text-indigo-700 rounded border border-indigo-100 hover:bg-indigo-100 transition-colors&quot;>组团社全程 (全陪)</button>
+                    <button onclick=&quot;applyPreset(1, 1)&quot; class=&quot;text-xs py-2 px-3 bg-indigo-50 text-indigo-700 rounded border border-indigo-100 hover:bg-indigo-100 transition-colors&quot;>国际领队任务 (领队)</button>
+                </div>
+            </div>
+
+            <!-- Main Button -->
+            <div class=&quot;pt-6&quot;>
+                <button id=&quot;main-btn&quot; onclick=&quot;handleMainAction()&quot; class=&quot;w-full py-4 bg-violet-600 text-white font-bold rounded-xl shadow-lg hover:bg-violet-700 active:transform active:scale-95 transition-all text-lg&quot;>
+                    启动模拟
+                </button>
+                <button id=&quot;reset-btn&quot; onclick=&quot;resetSimulation()&quot; class=&quot;w-full mt-3 py-2 text-gray-500 text-sm hover:underline&quot;>
+                    重置场景
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas Area -->
+    <div class=&quot;flex-1 relative bg-gray-50 flex flex-col&quot;>
+        <!-- HUD / Status -->
+        <div id=&quot;hud&quot; class=&quot;absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none z-10&quot;>
+            <div class=&quot;bg-white/90 backdrop-blur p-3 rounded-lg shadow-sm border border-gray-200&quot;>
+                <div class=&quot;text-[10px] uppercase tracking-wider text-gray-500 font-bold&quot;>当前状态</div>
+                <div id=&quot;status-display&quot; class=&quot;text-lg font-mono font-bold text-gray-800&quot;>就绪</div>
+            </div>
+            <div class=&quot;bg-white/90 backdrop-blur p-3 rounded-lg shadow-sm border border-gray-200 text-right&quot;>
+                <div class=&quot;text-[10px] uppercase tracking-wider text-gray-500 font-bold&quot;>识别结果</div>
+                <div id=&quot;result-display&quot; class=&quot;text-lg font-bold text-violet-600&quot;>等待启动...</div>
+            </div>
+        </div>
+
+        <!-- Simulation Canvas -->
+        <div class=&quot;flex-1 w-full relative&quot;>
+            <canvas id=&quot;simCanvas&quot; class=&quot;w-full h-full&quot;></canvas>
+            
+            <!-- Information Card (Overlay at end) -->
+            <div id=&quot;info-card&quot; class=&quot;hidden absolute inset-0 flex items-center justify-center p-6 z-20&quot;>
+                <div class=&quot;bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-2xl border-t-4 border-violet-500 max-w-sm w-full result-card&quot;>
+                    <h3 id=&quot;card-title&quot; class=&quot;text-2xl font-black text-gray-800 mb-2&quot;>地陪导游</h3>
+                    <p id=&quot;card-desc&quot; class=&quot;text-gray-600 leading-relaxed mb-4&quot;>负责在旅游目的地接待旅游团，提供导游讲解、生活服务及协调工作。</p>
+                    <div class=&quot;bg-gray-100 p-3 rounded-lg flex items-center gap-3&quot;>
+                        <div class=&quot;w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center&quot;>
+                            <span class=&quot;text-xl&quot;>🏆</span>
+                        </div>
+                        <div class=&quot;text-xs text-gray-500&quot;>
+                            <strong>职业关键点：</strong><span id=&quot;card-key&quot;>熟悉本地文化，极强的协调能力。</span>
+                        </div>
+                    </div>
+                    <button onclick=&quot;resetSimulation()&quot; class=&quot;mt-6 w-full py-3 bg-gray-800 text-white rounded-xl font-bold&quot;>再次模拟</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+/**
+ * Simulation State &amp; Logic
+ */
+const state = {
+    running: false,
+    paused: false,
+    ended: false,
+    progress: 0,
+    location: 0, // 0: Domestic, 1: International
+    scope: 0,    // 0: Local, 1: Inter-provincial
+    lastTimestamp: 0
+};
+
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const infoCard = document.getElementById('info-card');
+const mainBtn = document.getElementById('main-btn');
+
+let width, height;
+
+// Simulation Config
+const config = {
+    speed: 0.005,
+    cityRadius: 40,
+    guidePos: { x: 0, y: 0 },
+    targets: []
+};
+
+function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    width = canvas.clientWidth;
+    height = canvas.clientHeight;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+    setupTargets();
+}
+
+function setupTargets() {
+    // Define logical positions for &quot;Home City&quot;, &quot;Other City&quot;, &quot;Foreign Country&quot;
+    const centerY = height / 2;
+    config.targets = [
+        { x: width * 0.25, y: centerY, label: &quot;出发城市&quot; },
+        { x: width * 0.5, y: centerY, label: &quot;目的地 (境内)&quot; },
+        { x: width * 0.75, y: centerY, label: &quot;目的地 (境外)&quot; }
+    ];
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+function updateVar(name, val) {
+    state[name] = val;
+    
+    // UI Feedback
+    if (name === 'location') {
+        document.getElementById('loc-0').className = val === 0 ? &quot;flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm&quot; : &quot;flex-1 py-2 text-sm rounded-md transition-all text-gray-500&quot;;
+        document.getElementById('loc-1').className = val === 1 ? &quot;flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm&quot; : &quot;flex-1 py-2 text-sm rounded-md transition-all text-gray-500&quot;;
+        
+        // Logical constraint: International always implies &quot;National scope&quot; or higher in this sim's context
+        if (val === 1) {
+            updateVar('scope', 1);
+            document.getElementById('scope-container').style.opacity = '0.5';
+            document.getElementById('scope-container').style.pointerEvents = 'none';
+        } else {
+            document.getElementById('scope-container').style.opacity = '1';
+            document.getElementById('scope-container').style.pointerEvents = 'auto';
+        }
+    } else if (name === 'scope') {
+        document.getElementById('scope-0').className = val === 0 ? &quot;flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm&quot; : &quot;flex-1 py-2 text-sm rounded-md transition-all text-gray-500&quot;;
+        document.getElementById('scope-1').className = val === 1 ? &quot;flex-1 py-2 text-sm rounded-md transition-all bg-white shadow-sm&quot; : &quot;flex-1 py-2 text-sm rounded-md transition-all text-gray-500&quot;;
+    }
+
+    document.getElementById(name + '-slider').value = val;
+    resetSimulation();
+}
+
+function applyPreset(loc, scp) {
+    updateVar('location', loc);
+    updateVar('scope', scp);
+}
+
+function handleMainAction() {
+    if (state.ended) {
+        resetSimulation();
+        startSimulation();
+    } else if (state.running) {
+        pauseSimulation();
+    } else {
+        startSimulation();
+    }
+}
+
+function startSimulation() {
+    state.running = true;
+    state.paused = false;
+    state.ended = false;
+    mainBtn.innerText = &quot;暂停模拟&quot;;
+    document.getElementById('status-display').innerText = &quot;模拟中...&quot;;
+    document.getElementById('status-display').className = &quot;text-lg font-mono font-bold text-green-500&quot;;
+    requestAnimationFrame(animate);
+}
+
+function pauseSimulation() {
+    state.running = false;
+    state.paused = true;
+    mainBtn.innerText = &quot;继续模拟&quot;;
+    document.getElementById('status-display').innerText = &quot;已暂停&quot;;
+    document.getElementById('status-display').className = &quot;text-lg font-mono font-bold text-orange-500&quot;;
+}
+
+function resetSimulation() {
+    state.running = false;
+    state.paused = false;
+    state.ended = false;
+    state.progress = 0;
+    infoCard.classList.add('hidden');
+    mainBtn.innerText = &quot;启动模拟&quot;;
+    document.getElementById('status-display').innerText = &quot;就绪&quot;;
+    document.getElementById('status-display').className = &quot;text-lg font-mono font-bold text-gray-800&quot;;
+    document.getElementById('result-display').innerText = &quot;等待启动...&quot;;
+    draw();
+}
+
+function onSimulationEnd() {
+    state.running = false;
+    state.ended = true;
+    mainBtn.innerText = &quot;重新开始&quot;;
+    document.getElementById('status-display').innerText = &quot;模拟完成&quot;;
+    
+    // Determine Result
+    let result = { title: &quot;&quot;, desc: &quot;&quot;, key: &quot;&quot; };
+    
+    if (state.location === 1) {
+        result = {
+            title: &quot;领队 (Tour Leader)&quot;,
+            desc: &quot;出境旅游领队是指受旅行社委派，全权代表旅行社带领旅游团赴境外旅游，并为旅游团提供领队服务的导游。&quot;,
+            key: &quot;须具备领队资格，精通目的地语言，熟悉海关流程。&quot;
+        };
+    } else if (state.scope === 1) {
+        result = {
+            title: &quot;全陪 (National Escort)&quot;,
+            desc: &quot;全程陪同导游人员。受组团社委派，作为组团社的代表，在领队/地陪的配合下实施接待计划。&quot;,
+            key: &quot;跨省协调能力，负责全程质量监控，处理旅途突发事件。&quot;
+        };
+    } else {
+        result = {
+            title: &quot;地陪 (Local Escort)&quot;,
+            desc: &quot;地方陪同导游人员。受地接社委派，在旅游目的地为旅游团提供讲解和生活服务的人员。&quot;,
+            key: &quot;深厚的本地历史文化知识，熟悉当地路线和突发状况处理。&quot;
+        };
+    }
+
+    document.getElementById('result-display').innerText = result.title;
+    document.getElementById('card-title').innerText = result.title;
+    document.getElementById('card-desc').innerText = result.desc;
+    document.getElementById('card-key').innerText = result.key;
+    infoCard.classList.remove('hidden');
+}
+
+function animate(timestamp) {
+    if (!state.running) return;
+    
+    state.progress += config.speed;
+    
+    if (state.progress >= 1) {
+        state.progress = 1;
+        draw();
+        onSimulationEnd();
+        return;
+    }
+    
+    draw();
+    requestAnimationFrame(animate);
+}
+
+function draw() {
+    ctx.clearRect(0, 0, width, height);
+    
+    // Draw Map Paths
+    drawPath();
+    
+    // Draw Locations
+    config.targets.forEach((t, i) => drawLocation(t, i));
+    
+    // Draw Tourists &amp; Guide
+    drawTravelers();
+}
+
+function drawPath() {
+    ctx.beginPath();
+    ctx.setLineDash([10, 10]);
+    ctx.strokeStyle = &quot;#cbd5e1&quot;;
+    ctx.lineWidth = 4;
+    ctx.moveTo(config.targets[0].x, config.targets[0].y);
+    
+    if (state.location === 1) {
+        // Path to International
+        ctx.lineTo(config.targets[2].x, config.targets[2].y);
+    } else {
+        // Path to Other City
+        ctx.lineTo(config.targets[1].x, config.targets[1].y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function drawLocation(target, index) {
+    const isDomesticDest = index === 1;
+    const isInternationalDest = index === 2;
+    const isOrigin = index === 0;
+
+    let color = &quot;#94a3b8&quot;;
+    if (isOrigin) color = &quot;#64748b&quot;;
+    if (isDomesticDest &amp;&amp; state.location === 0) color = &quot;#8b5cf6&quot;;
+    if (isInternationalDest &amp;&amp; state.location === 1) color = &quot;#f43f5e&quot;;
+
+    // Glow effect for destination
+    if ((isDomesticDest &amp;&amp; state.location === 0) || (isInternationalDest &amp;&amp; state.location === 1)) {
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = color;
+    } else {
+        ctx.shadowBlur = 0;
+    }
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.font = &quot;bold 14px sans-serif&quot;;
+    ctx.fillStyle = &quot;#475569&quot;;
+    ctx.textAlign = &quot;center&quot;;
+    ctx.fillText(target.label, target.x, target.y + 40);
+}
+
+function drawTravelers() {
+    const start = config.targets[0];
+    const dest = state.location === 1 ? config.targets[2] : config.targets[1];
+    
+    // If local, the bus just circles or stays near city
+    let x, y;
+    if (state.location === 0 &amp;&amp; state.scope === 0) {
+        // Local: stays around the destination city mostly
+        x = dest.x + Math.cos(state.progress * Math.PI * 2) * 30;
+        y = dest.y + Math.sin(state.progress * Math.PI * 2) * 30;
+    } else {
+        // Moving: start to dest
+        x = start.x + (dest.x - start.x) * state.progress;
+        y = start.y + (dest.y - start.y) * state.progress;
+    }
+
+    // Draw Bus / Plane
+    ctx.save();
+    ctx.translate(x, y);
+    
+    // Draw Guide Icon
+    ctx.fillStyle = &quot;#8b5cf6&quot;;
+    ctx.beginPath();
+    ctx.arc(0, -15, 10, 0, Math.PI * 2);
+    ctx.fill();
+    // Head
+    ctx.fillStyle = &quot;#fff&quot;;
+    ctx.beginPath();
+    ctx.arc(0, -18, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // Flag (Tour guide flag)
+    ctx.strokeStyle = &quot;#facc15&quot;;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(5, -15);
+    ctx.lineTo(5, -30);
+    ctx.stroke();
+    ctx.fillStyle = &quot;#facc15&quot;;
+    ctx.fillRect(5, -30, 12, 8);
+
+    // Draw Tourists (Simple dots)
+    for(let i=0; i<5; i++) {
+        ctx.fillStyle = &quot;#334155&quot;;
+        ctx.beginPath();
+        ctx.arc(-15 + (i*6), 5, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Draw Transport Icon
+    if (state.location === 1) {
+        // Plane
+        ctx.fillStyle = &quot;#cbd5e1&quot;;
+        ctx.font = &quot;24px sans-serif&quot;;
+        ctx.fillText(&quot;✈️&quot;, 0, 15);
+    } else {
+        // Bus
+        ctx.fillStyle = &quot;#cbd5e1&quot;;
+        ctx.font = &quot;24px sans-serif&quot;;
+        ctx.fillText(&quot;🚌&quot;, 0, 15);
+    }
+
+    ctx.restore();
+}
+
+// Teacher Actions Listener
+window.addEventListener('message', function(event) {
+  const { type, target, state: newState, content } = event.data;
+
+  switch (type) {
+    case 'SET_WIDGET_STATE':
+      if (newState) {
+        Object.entries(newState).forEach(([key, value]) => {
+          updateVar(key, value);
+        });
+      }
+      break;
+    case 'HIGHLIGHT_ELEMENT':
+      const highlightEl = document.querySelector(target) || document.getElementById(target.replace('#',''));
+      if (highlightEl) {
+        highlightEl.style.outline = '3px solid rgba(139, 92, 246, 0.8)';
+        highlightEl.style.outlineOffset = '4px';
+        highlightEl.style.animation = 'pulse-highlight 2s infinite';
+        setTimeout(() => {
+          highlightEl.style.outline = '';
+          highlightEl.style.animation = '';
+        }, 3000);
+      }
+      break;
+  }
+});
+
+// Initial Draw
+draw();
+</script>
+</body>
+</html>" style="width:100%;height:clamp(500px,65vh,720px);border:none;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.4);background:#fff" allowfullscreen></iframe>
+</div></div>
+</div>
+<div class="scene" id="s-6">
+<div class="scene-hdr">
+  <span class="type-tag tt-slide">幻灯片</span>
+  <h2>等级制度：从“青铜”到“王者”</h2>
+  <span class="scene-counter">6 / 10</span>
+</div>
+<div class="scene-body"><div class="slide-canvas" style="background:#1e293b;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+<div style="position:absolute;left:0.00%;top:0.00%;width:68.75%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 32px;&quot;&gt;&lt;strong&gt;等级制度：从“青铜”到“王者”&lt;/strong&gt;&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:29.69%;background:#3b82f6;border-radius:8px;"></div>
+<img src="gen_img_Al3JtfdQ" style="position:absolute;left:0.00%;top:0.00%;width:34.38%;object-fit:contain;width:34.38%;height:34.44%" onerror="this.style.display='none'">
+<div style="position:absolute;left:0.00%;top:0.00%;width:34.38%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 18px;&quot;&gt;&lt;strong&gt;• 职级对应：&lt;/strong&gt;初级(青铜)至特级(王者)晋升路径&lt;/p&gt;&lt;p style=&quot;font-size: 18px;&quot;&gt;&lt;strong&gt;• 接团门槛：&lt;/strong&gt;高等级优先承接高端商务及定制团&lt;/p&gt;&lt;p style=&quot;font-size: 18px;&quot;&gt;&lt;strong&gt;• 核心价值：&lt;/strong&gt;实现职业尊严提升与高溢价变现&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 20px; text-align: center;&quot;&gt;导游等级市场分布占比&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;background:#eff6ff;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:28.12%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 18px; text-align: center; color: #1d4ed8;&quot;&gt;&lt;strong&gt;收益上限取决于等级，专业决定地位&lt;/strong&gt;&lt;/p&gt;</div>
+
+</div>
+</div>
+</div>
+<div class="scene" id="s-7">
+<div class="scene-hdr">
+  <span class="type-tag tt-slide">幻灯片</span>
+  <h2>升级攻略：考试与经验的双重考验</h2>
+  <span class="scene-counter">7 / 10</span>
+</div>
+<div class="scene-body"><div class="slide-canvas" style="background:#1e293b;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+<div style="position:absolute;left:0.00%;top:0.00%;width:68.75%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 32px; color: #1a365d;&quot;&gt;&lt;strong&gt;晋升全攻略：职业等级的“通关密码”&lt;/strong&gt;&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:25.00%;background:#3b82f6;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:34.38%;background:#eff6ff;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 20px;&quot;&gt;&lt;strong&gt;学历门槛&lt;/strong&gt;：高中至大学的进阶要求&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:34.38%;background:#eff6ff;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 20px;&quot;&gt;&lt;strong&gt;在职年限&lt;/strong&gt;：各级晋升的硬性时间限制&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:34.38%;background:#eff6ff;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 20px;&quot;&gt;&lt;strong&gt;语言能力&lt;/strong&gt;：外语导游的职业加分项&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:34.38%;background:#fff7ed;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 20px; color: #c2410c;&quot;&gt;&lt;strong&gt;AI 指令&lt;/strong&gt;：制定三年升高级职业规划&lt;/p&gt;</div>
+<img src="gen_img_MU-q5Cdf" style="position:absolute;left:0.00%;top:0.00%;width:31.25%;object-fit:contain;width:31.25%;height:31.25%" onerror="this.style.display='none'">
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 16px; text-align: center; color: #666666;&quot;&gt;职业发展路径图：从初级到高级的里程碑&lt;/p&gt;</div>
+
+</div>
+</div>
+</div>
+<div class="scene" id="s-8">
+<div class="scene-hdr">
+  <span class="type-tag tt-quiz">课堂测验</span>
+  <h2>晋升挑战赛：你能升到哪一级？</h2>
+  <span class="scene-counter">8 / 10</span>
+</div>
+<div class="scene-body"><div class="quiz-container" id="quiz-7" style="width:100%;max-width:720px;margin:0 auto">
+<div class="quiz-progress" id="qp-7">第1题 / 共3题</div>
+<div class="quiz-card" id="qcard-7"></div>
+<div class="quiz-fb" id="qfb-7" style="display:none"></div>
+<div class="quiz-nav" id="qnav-7"></div>
+<div class="quiz-result" id="qresult-7" style="display:none"></div>
+</div>
+<script>
+(function(){
+  var questions = [{"id": "q1", "type": "single", "question": "导游员小王于2021年6月通过全国导游资格考试并领取了导游证。若其在带团过程中表现优秀且无违规记录，根据现行规定，他最早可以在哪一年参加中级导游等级考试？", "options": [{"value": "A", "label": "2022年"}, {"value": "B", "label": "2023年"}, {"value": "C", "label": "2024年"}, {"value": "D", "label": "2025年"}], "answer": ["C"], "analysis": "根据《导游等级划分与评定》，申报中级导游等级考试的基本条件之一是取得导游证满3年。小王2021年拿证，到2024年满3年，因此最早报考时间为2024年。", "points": 30, "hasAnswer": true}, {"id": "q2", "type": "single", "question": "在导游等级晋升的考评制度中，关于“学历”的作用，下列说法正确的是：", "options": [{"value": "A", "label": "硕士研究生毕业后可直接跳过初级，报考高级导游"}, {"value": "B", "label": "拥有本科学历的导游从初级晋升中级时，执业年限可缩短为1年"}, {"value": "C", "label": "学历背景是申报高级和特级导游的重要参考，但在执业年限要求上通常对所有学历一视同仁"}, {"value": "D", "label": "大学本科及以上学历持有者在从中级晋升高级导游时，相较于大专学历可能在申报门槛或评审权重上更具优势"}], "answer": ["D"], "analysis": "学历在导游晋升中起到重要的调节作用。通常情况下，高学历者在申报高级导游或特级导游时，对其学术成果和专业素养的评价标准更高，且在部分省份的评审细则中，本科及以上学历是申报高级别导游的重要基础或加分项。选项A、B、C关于免考或大幅缩减年限的描述不符合现行通用国家标准。", "points": 30, "hasAnswer": true}, {"id": "q3", "type": "short_answer", "question": "某高级导游拟申报“特级导游”等级。请根据现行等级评定标准，概括申报特级导游在“工作资历”与“专业成果”两方面必须达到的核心要求。", "commentPrompt": "详细评分标准：(1) 工作资历：明确提到取得高级导游资格满5年且执业业绩突出 - 40%；(2) 专业成果：提到有高水平的学术论文、专著或在旅游教材编写中有突出贡献 - 30%；(3) 行业影响：提到在行业内具有极高声誉或对导游队伍建设有重大贡献 - 30%。", "analysis": "申报特级导游的核心条件包括：1. 资历要求：取得高级导游等级满5年，且在带团、培训等方面有卓越表现，无重大投诉。2. 专业成果：在国内外核心期刊发表过高水平的旅游学术论文，或出版过具有行业影响力的专业专著，或主持过省级以上旅游科研课题。3. 行业贡献：在导游人才培养或行业标准制定中发挥了领军作用。", "points": 40, "hasAnswer": false}];
+  var cur = 0, total = questions.length, score = 0;
+  var answered = false;
+  
+  function renderQ(){
+    answered = false;
+    var q = questions[cur];
+    var html = '<div class="q-stem">' + (cur+1) + '. ' + (q.question||q.stem||'') + '</div>';
+    html += '<div class="q-opts">';
+    var opts = q.options || [];
+    opts.forEach(function(opt){
+      var v = opt.value || opt.label || opt;
+      var lbl = opt.label || opt;
+      html += '<button class="q-opt" onclick="pickOpt_7(this,\'' + v.replace(/'/g,"\\'") + '\')">' + v + '. ' + lbl + '</button>';
+    });
+    html += '</div>';
+    document.getElementById('qcard-7').innerHTML = html;
+    document.getElementById('qfb-7').style.display = 'none';
+    document.getElementById('qp-7').innerText = '第'+(cur+1)+'题 / 共'+total+'题';
+    document.getElementById('qnav-7').innerHTML = '';
+  }
+  
+  window.pickOpt_7 = function(btn, val){
+    if(answered) return;
+    answered = true;
+    var q = questions[cur];
+    var correct = q.answer || q.correctAnswer || '';
+    var isRight = val === correct || val.charAt(0) === correct;
+    if(isRight) score++;
+    
+    document.querySelectorAll('#quiz-7 .q-opt').forEach(function(b){
+      b.disabled = true;
+      var bv = b.innerText.charAt(0);
+      if(bv === correct || b.innerText.startsWith(correct+'.')){
+        b.style.background = '#22c55e';
+        b.style.color = '#fff';
+      }
+    });
+    if(!isRight) btn.style.background = '#ef4444', btn.style.color = '#fff';
+    
+    var fb = document.getElementById('qfb-7');
+    fb.style.display = 'block';
+    fb.style.background = isRight ? 'rgba(34,197,94,.15)' : 'rgba(239,68,68,.15)';
+    fb.style.color = isRight ? '#4ade80' : '#f87171';
+    fb.innerHTML = (isRight ? '✓ 回答正确！' : '✗ 回答错误，正确答案：' + correct) + (q.analysis ? '<br><span style="color:#94a3b8;font-size:14px">' + q.analysis + '</span>' : '');
+    
+    var navbtn = '<button class="q-btn" onclick="nextQ_7()">' + (cur < total-1 ? '下一题 →' : '查看结果') + '</button>';
+    document.getElementById('qnav-7').innerHTML = navbtn;
+  };
+  
+  window.nextQ_7 = function(){
+    cur++;
+    if(cur >= total){
+      document.getElementById('qcard-7').style.display = 'none';
+      document.getElementById('qfb-7').style.display = 'none';
+      document.getElementById('qnav-7').innerHTML = '';
+      document.getElementById('qp-7').innerText = '完成！';
+      var pct = Math.round(score/total*100);
+      var r = document.getElementById('qresult-7');
+      r.style.display = 'block';
+      r.innerHTML = '<div class="q-score">🎉 得分：' + score + ' / ' + total + '</div><div class="q-pct">' + pct + '分</div><div style="color:#94a3b8;margin-top:12px">' + (pct>=80?'优秀！继续保持。':pct>=60?'良好！再接再厉。':'需要加强，多复习一下。') + '</div>';
+    } else {
+      renderQ();
+    }
+  };
+  
+  renderQ();
+})();
+</script></div>
+</div>
+<div class="scene" id="s-9">
+<div class="scene-hdr">
+  <span class="type-tag tt-slide">幻灯片</span>
+  <h2>职业雷区：什么情况会直接“Game Over”？</h2>
+  <span class="scene-counter">9 / 10</span>
+</div>
+<div class="scene-body"><div class="slide-canvas" style="background:#1e293b;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+<div style="position:absolute;left:0.00%;top:0.00%;width:65.62%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 32px;&quot;&gt;&lt;strong&gt;职业红线：触发“Game Over”的行为&lt;/strong&gt;&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:65.62%;background:#c00000;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:33.59%;background:#fff5f5;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:29.69%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 20px; line-height: 1.5;&quot;&gt;• &lt;strong&gt;资质造假：&lt;/strong&gt;虚假从业经历、伪造票据&lt;/p&gt;&lt;p style=&quot;font-size: 20px; line-height: 1.5;&quot;&gt;• &lt;strong&gt;重大事故：&lt;/strong&gt;负主要责任的服务质量事故&lt;/p&gt;&lt;p style=&quot;font-size: 20px; line-height: 1.5;&quot;&gt;• &lt;strong&gt;违法违规：&lt;/strong&gt;触碰法律红线，损害国家利益&lt;/p&gt;&lt;p style=&quot;font-size: 20px; line-height: 1.5;&quot;&gt;• &lt;strong&gt;终身禁入：&lt;/strong&gt;注销资格证，彻底告别行业&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:28.91%;background:#333333;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:27.34%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 16px; text-align: center; color: #ffffff;&quot;&gt;底线思维：别让努力在瞬间“清零”&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:0.47%;background:#c00000;border-radius:8px;"></div>
+
+</div>
+</div>
+</div>
+<div class="scene" id="s-10">
+<div class="scene-hdr">
+  <span class="type-tag tt-slide">幻灯片</span>
+  <h2>通关结算：我的导游职业手册</h2>
+  <span class="scene-counter">10 / 10</span>
+</div>
+<div class="scene-body"><div class="slide-canvas" style="background:#1e293b;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+<div style="position:absolute;left:0.00%;top:0.00%;width:68.75%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 32px; color: #1a1a1a; text-align: left;&quot;&gt;&lt;strong&gt;通关结算：我的导游职业手册&lt;/strong&gt;&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:23.44%;background:#e67e22;border-radius:8px;"></div>
+<img src="gen_img_DwPnaM2R" style="position:absolute;left:0.00%;top:0.00%;width:34.38%;object-fit:contain;width:34.38%;height:34.44%" onerror="this.style.display='none'">
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;background:#fdfaf6;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:28.12%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 24px; line-height: 1.5;&quot;&gt;&lt;strong&gt;核心复盘：&lt;/strong&gt;人种级逻辑&lt;/p&gt;&lt;p style=&quot;font-size: 24px; line-height: 1.5;&quot;&gt;&lt;strong&gt;行动建议：&lt;/strong&gt;百字避坑指南&lt;/p&gt;&lt;p style=&quot;font-size: 24px; line-height: 1.5;&quot;&gt;&lt;strong&gt;课后挑战：&lt;/strong&gt;AI笔记变Rap&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:34.38%;background:#fff3e0;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 20px; text-align: center; color: #d35400;&quot;&gt;&lt;strong&gt;知法懂法，做更有尊严的导游&lt;/strong&gt;&lt;/p&gt;</div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;background:#cccccc;border-radius:8px;"></div>
+<div style="position:absolute;left:0.00%;top:0.00%;width:31.25%;font-size:1.25vw;color:#ffffff;font-weight:normal;text-align:left;line-height:1.4;word-break:break-word;font-family:Microsoft YaHei,PingFang SC,sans-serif">&lt;p style=&quot;font-size: 16px; color: #7f8c8d; text-align: left;&quot;&gt;提示：完成Rap挑战即刻领取“职业王者”勋章&lt;/p&gt;</div>
+
+</div>
+</div>
+</div>
+
+<!-- 结尾 -->
+<div class="scene" id="s-end">
+  <div class="end-h2">🎉 本课完成！</div>
+  <p class="end-p">你已学习了导游人员及执业许可的全部内容<br>继续加油，下一课见！</p>
+  <br>
+  <button class="btn btn-next" style="margin-top:20px" onclick="location.href='../'">返回目录</button>
+</div>
+
+<div id="ctrl">
+  <button class="btn btn-prev" id="btnPrev" onclick="go(cur-1)">← 上一个</button>
+  <button class="btn btn-next" id="btnNext" onclick="go(cur+1)">下一个 →</button>
+</div>
+
+<script>
+var scenes = [{"type": "slide", "title": "开场：导游行业的“暴富”与“凉凉”", "badge": "幻灯片", "badgeClass": "tt-slide"}, {"type": "interactive", "title": "模拟体验：无证带团的后果", "badge": "互动体验", "badgeClass": "tt-interactive"}, {"type": "quiz", "title": "基础测试：谁才是真正的导游？", "badge": "课堂测验", "badgeClass": "tt-quiz"}, {"type": "slide", "title": "职业分身：地陪、全陪与领队", "badge": "幻灯片", "badgeClass": "tt-slide"}, {"type": "interactive", "title": "职场选择题：我是哪种导游？", "badge": "互动体验", "badgeClass": "tt-interactive"}, {"type": "slide", "title": "等级制度：从“青铜”到“王者”", "badge": "幻灯片", "badgeClass": "tt-slide"}, {"type": "slide", "title": "升级攻略：考试与经验的双重考验", "badge": "幻灯片", "badgeClass": "tt-slide"}, {"type": "quiz", "title": "晋升挑战赛：你能升到哪一级？", "badge": "课堂测验", "badgeClass": "tt-quiz"}, {"type": "slide", "title": "职业雷区：什么情况会直接“Game Over”？", "badge": "幻灯片", "badgeClass": "tt-slide"}, {"type": "slide", "title": "通关结算：我的导游职业手册", "badge": "幻灯片", "badgeClass": "tt-slide"}];
 var N = scenes.length;
-function init() {
-var nav = document.getElementById('nav');
-scenes.forEach(function(s,i){var d=document.createElement('div');d.className='dot';d.title=s.title;d.onclick=function(){go(i+1);};nav.appendChild(d);});
-var end=document.createElement('div');end.className='dot';end.innerHTML='✓';end.style.fontSize='8px';end.style.textAlign='center';end.style.lineHeight='9px';end.onclick=function(){go(N+1);};nav.appendChild(end);
+var cur = 0;
+
+function init(){
+  var nav = document.getElementById('nav');
+  scenes.forEach(function(s,i){
+    var d = document.createElement('div');
+    d.className = 'dot';
+    d.title = s.title;
+    d.onclick = function(){ go(i+1); };
+    nav.appendChild(d);
+  });
 }
+
 function go(n){
-document.querySelectorAll('.scene').forEach(function(el){el.classList.remove('active');});
-if(n===0){document.getElementById('s-cover').classList.add('active');}
-else if(n===N+1){document.getElementById('s-end').classList.add('active');}
-else{var el=document.getElementById('s-'+n);if(el)el.classList.add('active');}
-cur=n;update();window.scrollTo(0,0);
+  document.querySelectorAll('.scene').forEach(function(el){ el.classList.remove('active'); });
+  if(n <= 0){ document.getElementById('s-cover').classList.add('active'); cur = 0; }
+  else if(n > N){ document.getElementById('s-end').classList.add('active'); cur = N+1; }
+  else{ var el = document.getElementById('s-'+n); if(el) el.classList.add('active'); cur = n; }
+  update();
+  window.scrollTo(0,0);
 }
+
 function update(){
-var pct=cur===0?0:cur===N+1?100:Math.round((cur-1)/N*100);
-document.getElementById('pb').style.width=pct+'%';
-document.querySelectorAll('.dot').forEach(function(d,i){d.classList.remove('active','done');if(i+1===cur)d.classList.add('active');else if(i+1<cur)d.classList.add('done');});
-document.getElementById('btnPrev').disabled=cur===0;
-document.getElementById('btnNext').disabled=cur===N+1;
+  var pct = cur === 0 ? 0 : cur > N ? 100 : Math.round((cur-1)/N*100);
+  document.getElementById('pb').style.width = pct + '%';
+  document.querySelectorAll('.dot').forEach(function(d,i){
+    d.classList.remove('active','done');
+    if(i+1 === cur) d.classList.add('active');
+    else if(i+1 < cur) d.classList.add('done');
+  });
+  document.getElementById('btnPrev').disabled = cur <= 0;
+  document.getElementById('btnNext').disabled = cur > N;
 }
-document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();if(cur<N+1)go(cur+1);}if(e.key==='ArrowLeft'){e.preventDefault();if(cur>0)go(cur-1);}});
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'ArrowRight' || e.key === ' '){ e.preventDefault(); if(cur <= N) go(cur+1); }
+  if(e.key === 'ArrowLeft'){ e.preventDefault(); if(cur > 0) go(cur-1); }
+});
+
 init();
 </script>
 </body>
